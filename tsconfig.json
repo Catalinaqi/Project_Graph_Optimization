@@ -1,0 +1,29 @@
+{
+  "compilerOptions": {
+    "target": "es6",
+    "module": "commonjs",
+    "rootDir": "src",
+    "baseUrl": "src",
+    "outDir": "dist",
+    "strict": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "skipLibCheck": true,
+    "moduleResolution": "node",
+    "resolveJsonModule": true,
+    "paths": {
+      "@/*": ["*"],
+      "@types/*": ["@types/*"]
+    },
+    "typeRoots": ["./src/@types", "./node_modules/@types"]
+  },
+  "include": ["src/**/*"],
+  "exclude": [
+    "eslint.config.js",
+    "commitlint.config.js",
+    "jest.setup.js",
+    "test",
+    "node_modules",
+    "dist"
+  ]
+}
