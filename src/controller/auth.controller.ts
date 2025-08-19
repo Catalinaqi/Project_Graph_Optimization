@@ -1,54 +1,93 @@
-import type { Request, Response, NextFunction } from 'express';
-import AuthService from '@/service/AuthService';
-import logger from '@/config/logger';
+import type { Request, Response, NextFunction } from "express";
+import AuthService from "@/service/AuthService";
+import logger from "@/config/logger";
+import JwtUtils from "@/common/util/jwt.util";
 
 /**
- * 🔐 AuthController
+ * AuthController
  *
- * Descrizione generale:
- * - Gestisce le richieste HTTP relative all’autenticazione degli utenti.
- * - Espone i metodi per la registrazione e il login.
- * - Ogni metodo coordina la chiamata al rispettivo service (`AuthService`),
- *   gestisce la risposta HTTP e cattura eventuali errori.
+ * Description:
+ * Controller responsible for handling HTTP requests related to user authentication.
+ * Exposes methods for user registration and login.
+ * Delegates the actual business logic to `AuthService` and ensures proper HTTP responses.
  */
 export const AuthController = {
     /**
      * POST /auth/register
-     * - Registra un nuovo utente standard (ruolo = user).
      *
-     * Flusso:
-     * 1. Logga l’ingresso della richiesta.
-     * 2. Estrae `email` e `password` dal body.
-     * 3. Chiama `AuthService.register` per creare l’utente.
-     * 4. Restituisce `201 Created` con un messaggio e i dati di registrazione.
-     * 5. In caso di errore, delega a `next(err)` → gestito dal middleware errori.
+     * Description:
+     * Registers a new user with a standard role (user).
+     *
+     * Objective:
+     * - Extract email and password from the request body.
+     * - Call `AuthService.register` to create a new user.
+     * - Return a 201 Created response with registration data.
+     *
+     * @param req Express Request object. Expects `email` and `password` in `req.body`.
+     * @param res Express Response object used to send back JSON response.
+     * @param next Express NextFunction used for error propagation.
      */
     async register(req: Request, res: Response, next: NextFunction) {
         try {
-            logger.debug('[AuthController] /register chiamato');
+            logger.debug("[AuthController] Register request received", {
+                route: "/auth/register",
+                body: { email: req.body?.email },
+            });
+
             const { email, password } = req.body;
             const result = await AuthService.register(email, password);
-            res.status(201).json({ message: 'Usuario registrado', ...result });
-        } catch (err) { next(err); }
+
+            logger.info("[AuthController] User registered successfully", {
+                email,
+            });
+
+            res.status(201).json({
+                message: "User registered successfully",
+                ...result,
+            });
+        } catch (err) {
+            logger.error("[AuthController] Registration failed", {
+                error: err instanceof Error ? err.message : err,
+            });
+            next(err);
+        }
     },
 
     /**
      * POST /auth/login
-     * - Autentica un utente e restituisce un JWT (algoritmo RS256).
      *
-     * Flusso:
-     * 1. Logga l’ingresso della richiesta.
-     * 2. Estrae `email` e `password` dal body.
-     * 3. Chiama `AuthService.login` per verificare credenziali e generare JWT.
-     * 4. Restituisce `200 OK` con il token e i dati associati all’utente.
-     * 5. In caso di errore, delega a `next(err)` → gestito dal middleware errori.
+     * Description:
+     * Authenticates a user and returns a signed JWT (RS256 algorithm).
+     *
+     * Objective:
+     * - Extract email and password from the request body.
+     * - Call `AuthService.login` to validate credentials and generate JWT.
+     * - Return a 200 OK response with the token and user data.
+     *
+     * @param req Express Request object. Expects `email` and `password` in `req.body`.
+     * @param res Express Response object used to send back JSON response.
+     * @param next Express NextFunction used for error propagation.
      */
     async login(req: Request, res: Response, next: NextFunction) {
         try {
-            logger.debug('[AuthController] /login chiamato');
+            logger.debug("[AuthController] Login request received", {
+                route: "/auth/login",
+                body: { email: req.body?.email },
+            });
+
             const { email, password } = req.body;
             const result = await AuthService.login(email, password);
+
+            logger.info("[AuthController] User logged in successfully", {
+                email,
+            });
+
             res.status(200).json(result);
-        } catch (err) { next(err); }
+        } catch (err) {
+            logger.error("[AuthController] Login failed", {
+                error: err instanceof Error ? err.message : err,
+            });
+            next(err);
+        }
     },
 };

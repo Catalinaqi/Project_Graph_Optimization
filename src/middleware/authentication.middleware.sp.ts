@@ -1,5 +1,5 @@
 import {NextFunction, Request, Response} from "express";
-import {JwtUtils} from "@/common/util/jwt.util";
+import JwtUtils from "@/common/util/jwt.util";
 import {getError} from "@/common/util/api.error.util";
 import {UserPayloadTypeSafe} from "@/common/types";
 import {ErrorEnum} from "@/common/enums";

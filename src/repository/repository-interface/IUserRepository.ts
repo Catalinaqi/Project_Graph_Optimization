@@ -1,55 +1,100 @@
-import type { GraphUser } from '@/model/GraphUser';
+import type { GraphUser } from "@/model/GraphUser";
 
 /**
- * 🗂️ Interfaccia IUserRepository
+ * IUserRepository (Interface)
  *
- * Descrizione generale:
- * - Definisce il contratto per un repository utenti.
- * - Stabilisce i metodi che qualsiasi implementazione (es. `UserRepository`) deve offrire.
- * - Garantisce type-safety e separazione tra livello astratto (interfaccia) e implementazione concreta.
+ * Description:
+ * Defines the contract for a user repository. It ensures that any concrete
+ * implementation (e.g., `UserRepository`) provides the required methods for
+ * retrieving, creating, and updating users.
  *
- * Metodi principali:
- *  - `getByEmail` → cerca un utente per email
- *  - `getById` → cerca un utente per id
- *  - `create` → crea un nuovo utente con password hashata e saldo iniziale
- *  - `updateBalanceByEmail` → aggiorna il saldo token di un utente e ritorna i dettagli della modifica
+ * Objective:
+ * - Abstract away database-specific operations.
+ * - Provide type-safe access to user-related persistence methods.
+ * - Enforce a consistent API across different repository implementations.
+ *
+ * Main Methods:
+ * - getByEmail → find a user by email.
+ * - getById → find a user by id.
+ * - create → create a new user with a hashed password and initial tokens.
+ * - updateBalanceByEmail → update the token balance of a user and return update details.
  */
 export interface IUserRepository {
     /**
-     * 🔎 Recupera un utente dal database a partire dall’email.
-     * @param email - indirizzo email dell’utente
-     * @returns `GraphUser` o `null` se non trovato
+     * getByEmail
+     *
+     * Description:
+     * Retrieves a user by email from the database.
+     *
+     * Parameters:
+     * @param email {string} - Email address of the user to search for.
+     *
+     * Returns:
+     * @returns {Promise<GraphUser | null>} - The user if found, otherwise null.
      */
     getByEmail(email: string): Promise<GraphUser | null>;
 
     /**
-     * 🔎 Recupera un utente dal database a partire dall’id.
-     * @param id - identificativo univoco dell’utente
-     * @returns `GraphUser` o `null` se non trovato
+     * getById
+     *
+     * Description:
+     * Retrieves a user by unique identifier from the database.
+     *
+     * Parameters:
+     * @param id {string} - Unique identifier of the user.
+     *
+     * Returns:
+     * @returns {Promise<GraphUser | null>} - The user if found, otherwise null.
      */
-    getById(id: string): Promise<GraphUser | null>;
+    getById(id: number): Promise<GraphUser | null>;
 
     /**
-     * ➕ Crea un nuovo utente nel database.
-     * @param email - indirizzo email dell’utente
-     * @param passwordHash - password già cifrata (hashata)
-     * @param initialTokens - numero di token iniziali assegnati
-     * @returns `GraphUser` appena creato
+     * create
+     *
+     * Description:
+     * Creates a new user in the database with hashed password and initial token balance.
+     *
+     * Parameters:
+     * @param email {string} - Email address of the new user.
+     * @param passwordHash {string} - Hashed password of the user.
+     * @param initialTokens {number} - Initial number of tokens assigned to the user.
+     *
+     * Returns:
+     * @returns {Promise<GraphUser>} - The newly created user entity.
      */
-    create(email: string, passwordHash: string, initialTokens: number): Promise<GraphUser>;
+    create(
+        email: string,
+        passwordHash: string,
+        initialTokens: number
+    ): Promise<GraphUser>;
 
     /**
-     * 💰 Aggiorna il saldo token di un utente dato l’email.
-     * @param email - indirizzo email dell’utente target
-     * @param newBalance - nuovo saldo di token
-     * @param performerId - id dell’admin/utente che effettua l’operazione
-     * @param reason - motivo della ricarica (opzionale, es. "admin recharge")
-     * @returns Oggetto con email, token precedenti, nuovi token e differenza
+     * updateBalanceByEmail
+     *
+     * Description:
+     * Updates the token balance of a user identified by email.
+     * Also records the id of the performer and an optional reason for auditing.
+     *
+     * Parameters:
+     * @param email {string} - Email address of the target user.
+     * @param newBalance {number} - New token balance to set.
+     * @param performerId {string} - Id of the admin/user performing the operation.
+     * @param reason {string} - Optional reason for the recharge (e.g., "admin recharge").
+     *
+     * Returns:
+     * @returns {Promise<{ email: string; previousTokens: number; newTokens: number; diff: number }>}
+     * - An object with email, previous tokens, new tokens, and difference applied.
      */
     updateBalanceByEmail(
         email: string,
-        newBalance: number,
-        performerId: string,
+        rechargeTokens: number,
+        performerId: number,
         reason?: string
-    ): Promise<{ email: string; previousTokens: number; newTokens: number; diff: number }>;
+    ): Promise<{
+        email: string;
+        previousTokens: number;
+        rechargeTokens: number;
+        totalRechargeTokens: number;
+        //diff: number;
+    }>;
 }

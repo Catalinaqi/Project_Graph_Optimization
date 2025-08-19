@@ -1,35 +1,62 @@
 import { Router } from 'express';
 import { AuthController } from '@/controller/auth.controller';
+import logger from '@/config/logger';
 
 /**
- * 🔐 Router: rotte di autenticazione
+ * Authentication Router
  *
- * Descrizione generale:
- * - Gestisce la registrazione e il login degli utenti.
- * - Non richiede autenticazione JWT, poiché sono le rotte di ingresso al sistema.
+ * Description:
+ * This router manages user authentication endpoints.
+ * It provides routes for user registration and login.
+ * JWT authentication is not required here because these are entry points.
  */
-
 const router = Router();
 
 /**
  * POST /auth/register
- * - Registra un nuovo utente.
- * - Flusso:
- *   1. Il client invia email, password e altri dati necessari.
- *   2. `AuthController.register` valida i dati e crea un nuovo record utente nel DB.
- *   3. In risposta viene restituito l’utente registrato e/o un token di accesso iniziale.
+ *
+ * Description:
+ * Registers a new user in the system.
+ *
+ * Objective:
+ * Validate the provided data, create a new user in the database,
+ * and return the user information or an initial access token.
+ *
+ * Parameters:
+ * @param req.body.email {string} - The email of the user to register.
+ * @param req.body.password {string} - The password of the user to register.
+ * @param req.body.[otherFields] {any} - Additional optional registration fields.
+ *
+ * Returns:
+ * JSON containing the registered user information and/or a JWT token.
  */
-router.post('/register', AuthController.register);
+router.post('/register', (req, res, next) => {
+    logger.info('[Auth Router] Handling request: POST /auth/register');
+    AuthController.register(req, res, next);
+    logger.info('[Auth Router] Finished handling request: POST /auth/register');
+});
 
 /**
  * POST /auth/login
- * - Esegue l’autenticazione di un utente esistente.
- * - Flusso:
- *   1. Il client invia email e password.
- *   2. `AuthController.login` verifica le credenziali.
- *   3. Se valide, ritorna un JWT firmato contenente le informazioni dell’utente (payload).
- *   4. Se non valide, viene restituito un errore di autenticazione.
+ *
+ * Description:
+ * Authenticates an existing user.
+ *
+ * Objective:
+ * Validate the provided credentials and return a signed JWT token if valid.
+ * If credentials are invalid, return an authentication error.
+ *
+ * Parameters:
+ * @param req.body.email {string} - The email of the user.
+ * @param req.body.password {string} - The password of the user.
+ *
+ * Returns:
+ * JSON containing a JWT token if the login is successful.
  */
-router.post('/login', AuthController.login);
+router.post('/login', (req, res, next) => {
+    logger.info('[Auth Router] Handling request: POST /auth/login');
+    AuthController.login(req, res, next);
+    logger.info('[Auth Router] Finished handling request: POST /auth/login');
+});
 
 export default router;

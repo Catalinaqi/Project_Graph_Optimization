@@ -5,8 +5,9 @@
   "scripts": {
     "migrate": "npx sequelize-cli db:migrate",
     "migrate:undo": "npx sequelize-cli db:migrate:undo",
-    "seed": "npx sequelize-cli db:seed:all",
-    "seed:undo": "npx sequelize-cli db:seed:undo:all",
+    "db:seed-admin": "npm run build && npx sequelize-cli db:seed --seed dist/database/seeders/20250818-seed-admin-user.js",
+    "db:seed:all": "npm run build && npx sequelize-cli db:seed:all",
+    "db:seed:undo:all": "npm run build && npx sequelize-cli db:seed:undo:all",
     "lint": "eslint \"src/**/*.{ts,tsx}\"",
     "lint:fix": "eslint \"src/**/*.{ts,tsx}\" --fix",
     "format": "prettier --write .",

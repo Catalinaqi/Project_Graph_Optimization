@@ -27,15 +27,14 @@ jest-html-reporters-*.html
 
 # --- Environment & secrets
 .env
-.env.*
-!.env.example            # keep a non-sensitive example env file
+#.env.*
 *.pem
 *.key
 *.crt
 
 # --- JWT keys (generated at runtime)
 keys/*
-!keys/.gitkeep           # keep folder structure without committing keys
+!keys/.gitkeep
 
 # --- IDE / editor
 .vscode/

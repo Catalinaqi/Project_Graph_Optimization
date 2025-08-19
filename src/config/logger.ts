@@ -1,37 +1,55 @@
 import { createLogger, format, transports } from "winston";
 
 /**
- * 📝 Logger applicativo (Winston)
+ * Application Logger (Winston)
  *
- * Descrizione:
- * - Crea un logger centralizzato per tutta l’applicazione.
- * - Livello di log configurabile tramite variabile d’ambiente `LOG_LEVEL` (default: debug).
- * - Output in console con timestamp, livello, messaggio e metadati opzionali.
- * - In caso di errori, mostra anche lo stack trace.
+ * Description:
+ * Creates a centralized logger for the entire application.
  *
- * Flusso:
- * 1. Ogni log riceve un `timestamp`.
- * 2. Se l’oggetto passato contiene `Error`, viene incluso lo `stack`.
- * 3. I parametri extra (`meta`) vengono serializzati in JSON.
- * 4. L’output viene stampato su `Console` (ma può essere esteso a file, DB, ecc.).
+ * Objective:
+ * - Provide consistent logging with timestamp, level, message, and optional metadata.
+ * - Support configurable log level via environment variable `LOG_LEVEL` (default: debug).
+ * - Include stack traces for errors.
+ * - Print logs to console (can be extended to files, databases, etc.).
  */
-
 const logger = createLogger({
-    // 📌 livello minimo di log: può essere "error", "warn", "info", "debug"...
+    /**
+     * Log level
+     * Defines the minimum severity of logs that will be output.
+     * Can be "error", "warn", "info", "debug", etc.
+     */
     level: process.env.LOG_LEVEL || "debug",
 
-    // 🎨 formattazione dei log
+    /**
+     * Log format
+     * - Adds ISO timestamps to each log entry.
+     * - Includes stack traces for errors.
+     * - Supports string interpolation (e.g., "value: %s").
+     * - Serializes extra metadata as JSON.
+     */
     format: format.combine(
-        format.timestamp(),                  // aggiunge timestamp ISO
-        format.errors({ stack: true }),      // include stack trace per gli errori
-        format.splat(),                      // permette stringhe tipo "valore: %s"
+        format.timestamp({
+            format: () =>
+                new Date().toLocaleString("it-IT", {
+                    timeZone: process.env.APP_TZ || "Europe/Rome",
+                    hour12: false,
+                }) + `.${new Date().getMilliseconds().toString().padStart(3,"0")}`
+        }),
+        format.errors({ stack: true }),
+        format.splat(),
         format.printf(({ level, message, timestamp, stack, ...meta }) => {
-            const metaStr = Object.keys(meta).length ? ` ${JSON.stringify(meta)}` : "";
+            const metaStr = Object.keys(meta).length
+                ? ` ${JSON.stringify(meta)}`
+                : "";
             return `${timestamp} ${level}: ${stack ?? message}${metaStr}`;
         })
     ),
 
-    // 📤 trasporto: stampa i log in console
+    /**
+     * Transports
+     * Defines the destination of log messages.
+     * Currently configured to output logs to the console.
+     */
     transports: [new transports.Console()],
 });
 

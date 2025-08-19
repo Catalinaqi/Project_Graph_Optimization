@@ -1,58 +1,96 @@
-import type { GraphUser } from '@/model/GraphUser';
+import type { GraphUser } from "@/model/GraphUser";
 
 /**
- * 🗂️ Interfaccia IUserDao
+ * IUserDao (Interface)
  *
- * Descrizione generale:
- * - Definisce il contratto per l’accesso diretto ai dati degli utenti nel database.
- * - È il livello più vicino al DB: ogni metodo corrisponde a un’operazione CRUD o simile.
- * - Viene implementata da `UserDao`, che usa i modelli Sequelize.
+ * Description:
+ * Defines the contract for direct access to user data in the database.
+ * Represents the lowest level of persistence abstraction: each method maps
+ * to a CRUD or data-related operation.
  *
- * Metodi principali:
- *  - `findByEmail` → cerca un utente a partire dall’email
- *  - `findById` → cerca un utente tramite id (chiave primaria)
- *  - `createUser` → crea un nuovo utente con i campi base
- *  - `setNewBalance` → aggiorna il saldo dei token e restituisce dettagli della modifica
+ * Implemented by:
+ * - `UserDao`, which interacts with Sequelize models.
+ *
+ * Main Methods:
+ *  - `findByEmail` → find a user by email
+ *  - `findById` → find a user by primary key (id)
+ *  - `createUser` → create a new user with basic fields
+ *  - `setNewBalance` → update token balance and return transaction details
  */
 export interface IUserDao {
     /**
-     * 🔎 Recupera un utente a partire dall’email.
-     * @param email - indirizzo email dell’utente
-     * @returns `GraphUser` se trovato, `null` altrimenti
+     * findByEmail (Method)
+     *
+     * Description:
+     * Retrieves a user from the database based on their email.
+     *
+     * Parameters:
+     * @param email {string} - User's email address to search for.
+     *
+     * Returns:
+     * - `GraphUser` if found, otherwise `null`.
      */
     findByEmail(email: string): Promise<GraphUser | null>;
 
     /**
-     * 🔎 Recupera un utente a partire dall’id (chiave primaria).
-     * @param id - identificativo univoco dell’utente
-     * @returns `GraphUser` se trovato, `null` altrimenti
+     * findById (Method)
+     *
+     * Description:
+     * Retrieves a user from the database based on their unique identifier (primary key).
+     *
+     * Parameters:
+     * @param id {string} - Unique identifier of the user.
+     *
+     * Returns:
+     * - `GraphUser` if found, otherwise `null`.
      */
-    findById(id: string): Promise<GraphUser | null>;
+    findById(id: number): Promise<GraphUser | null>;
 
     /**
-     * ➕ Crea un nuovo utente nel database.
-     * @param data - oggetto con email, password hashata, ruolo (user/admin) e token iniziali
-     * @returns `GraphUser` creato
+     * createUser (Method)
+     *
+     * Description:
+     * Creates a new user in the database with the provided fields.
+     *
+     * Parameters:
+     * @param data {object} - User creation data:
+     *   - `email_user` {string}: User email.
+     *   - `password_user` {string}: Hashed password.
+     *   - `role_user?` {"user" | "admin"}: User role (default: user).
+     *   - `tokens_user?` {string}: Initial token balance (optional).
+     *
+     * Returns:
+     * - Newly created `GraphUser`.
      */
     createUser(data: {
         email_user: string;
         password_user: string;
-        role_user?: 'user' | 'admin';
+        role_user?: "user" | "admin";
         tokens_user?: string;
     }): Promise<GraphUser>;
 
     /**
-     * 💰 Aggiorna il saldo token di un utente.
-     * @param userId - id dell’utente target
-     * @param newBalance - nuovo saldo token
-     * @param performerId - id dell’admin/utente che effettua l’operazione (può essere null)
-     * @param reason - motivazione dell’operazione (es. "admin recharge")
-     * @returns Oggetto con token precedenti, nuovi token e differenza
+     * setNewBalance (Method)
+     *
+     * Description:
+     * Updates the token balance of a given user and records the transaction details.
+     *
+     * Parameters:
+     * @param userId {number} - Target user ID.
+     * @param newBalance {number} - New token balance to assign.
+     * @param performerId {string | null} - ID of the admin/user performing the operation (nullable).
+     * @param reason {string} - Reason for the operation (e.g., "admin recharge").
+     *
+     * Returns:
+     * - Object containing:
+     *   - `previousTokens` {number}: Old token balance.
+     *   - `newTokens` {number}: Updated token balance.
+     *   - `diff` {number}: Difference between old and new balance.
      */
     setNewBalance(
-        userId: string,
+        userId: number,
         newBalance: number,
-        performerId: string | null,
+        performerId: number | '',
         reason: string
-    ): Promise<{ previousTokens: number; newTokens: number; diff: number }>;
+    ): Promise<{ previousTokens: number; rechargeTokens: number; totalRechargeTokens: number; updatedAt: string }>;
 }

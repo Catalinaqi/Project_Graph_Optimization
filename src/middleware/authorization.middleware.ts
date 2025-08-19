@@ -1,72 +1,81 @@
-// src/middleware/authorization.middleware.ts
 import type { Request, Response, NextFunction } from "express";
 import { getError } from "@/common/util/api.error.util";
 import { ErrorEnum, GraphRoleUserEnum } from "@/common/enums";
 import logger from "@/config/logger";
 
-
 /**
- * # Middleware di Autorizzazione (per Ruoli)
+ * AuthorizationMiddleware
  *
- * ## Obiettivo
- * Garantire che l’utente autenticato possegga **almeno uno** dei ruoli richiesti
- * prima di accedere alla rotta protetta.
+ * Description:
+ * Role-based authorization middleware for protected routes.
  *
- * ## Flusso (STEP)
- * 1) Inizio autorizzazione (log con `rid`)
- * 2) Verifica presenza utente in `req.user` (deve essere già autenticato dal middleware di autenticazione)
- * 3) Estrazione e normalizzazione del ruolo utente (dal JWT/`req.user.role`)
- * 4) Verifica appartenenza del ruolo alla lista di ruoli ammessi
- * 5) Autorizzazione OK → `next()`
- *    In caso contrario → errore centralizzato con `FORBIDDEN_ERROR`
+ * Objective:
+ * - Ensure that the authenticated user has at least one of the required roles
+ *   before allowing access to the route handler.
  *
- * ## Esempio d’uso
+ * Usage:
  * router.post(
  *   "/admin/recharge",
- *   authenticate,
+ *   authenticationMiddleware,
  *   AuthorizationMiddleware.requireRole(GraphRoleUserEnum.ADMIN),
  *   handler
  * );
  */
 export class AuthorizationMiddleware {
+    /**
+     * requireRole
+     *
+     * Description:
+     * Factory method that returns an Express middleware enforcing that the
+     * authenticated user possesses one of the specified roles.
+     *
+     * Parameters:
+     * @param roles {GraphRoleUserEnum[]} - One or more allowed roles for the route.
+     *
+     * Returns:
+     * @returns {(req: Request, res: Response, next: NextFunction) => void} - Middleware that validates the user role.
+     */
     static requireRole(...roles: GraphRoleUserEnum[]) {
         return (req: Request, _res: Response, next: NextFunction): void => {
+            // Generate or reuse a request identifier for traceability in logs
             const rid: string =
                 (req.headers["x-request-id"] as string) || Math.random().toString(36).slice(2);
 
             try {
-                logger.debug("[AUTHZ STEP 1] Inizio autorizzazione rid=%s", rid);
+                logger.debug("[AuthZ] Authorization started ... ", { rid, requiredRoles: roles });
 
-                // STEP 2: Utente deve essere già autenticato
+                // The authentication middleware must have attached the user to the request
                 if (!req.user) {
-                    logger.warn("[AUTHZ STEP 2] Utente non autenticato rid=%s", rid);
+                    logger.warn("[AuthZ] Missing authenticated user on request", { rid });
                     return next(getError(ErrorEnum.UNAUTHORIZED_ERROR));
                 }
 
-                // STEP 3: Ruolo utente
+                // Resolve the user role from the authenticated payload
                 const userRole = req.user.role as GraphRoleUserEnum;
-                logger.debug("[AUTHZ STEP 3] Ruolo utente=%s rid=%s", userRole, rid);
+                logger.debug("[AuthZ] User role resolved", { rid, userRole });
 
-                // STEP 4: Verifica ruolo
+                // Verify that the user's role is included in the allowed roles
                 const allowed = roles.includes(userRole);
                 if (!allowed) {
-                    logger.warn(
-                        "[AUTHZ STEP 4] Accesso negato. richiesti=%s, utente=%s rid=%s",
-                        roles.join(", "),
+                    const message = `Requires one of the following roles: ${roles.join(", ")}`;
+                    logger.warn("[AuthZ] Access denied due to insufficient role", {
+                        rid,
                         userRole,
-                        rid
-                    );
-                    const err = getError(ErrorEnum.FORBIDDEN_ERROR) as Error & { message?: string };
-                    err.message = `Requires one of the following roles: ${roles.join(", ")}`;
-                    return next(err);
+                        requiredRoles: roles,
+                        message,
+                    });
+                    return next(getError(ErrorEnum.FORBIDDEN_ERROR, message));
                 }
 
-                // STEP 5: OK
-                logger.info("[AUTHZ STEP 5] Autorizzazione OK role=%s rid=%s", userRole, rid);
+                logger.info("[AuthZ] Authorization granted", { rid, userRole });
                 return next();
             } catch (err: unknown) {
-                const msg = err instanceof Error ? err.message : "Unknown error";
-                logger.error("[AUTHZ FAIL] Errore autorizzazione rid=%s err=%s", rid, msg, { err });
+                const message = err instanceof Error ? err.message : String(err);
+                logger.error("[AuthZ] Authorization check failed", {
+                    rid,
+                    error: message,
+                    stack: err instanceof Error ? err.stack : undefined,
+                });
                 return next(getError(ErrorEnum.FORBIDDEN_ERROR));
             }
         };

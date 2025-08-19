@@ -1,48 +1,74 @@
-// import environment from "@/config/enviroment";
+import environment from "@/config/enviroment";
 import { BcryptPasswordHasher, PasswordHasher } from "./password.strategy";
 import { JwtStrategy, RS256JwtStrategy } from "./jwt.strategy";
+import logger from "@/config/logger";
 
 /**
- * 🏭 SecurityFactory
+ * SecurityFactory
  *
- * Descrizione:
- * - Implementa il **Factory Method Pattern** per creare oggetti legati alla sicurezza.
- * - Centralizza la logica di istanziazione così i servizi non hanno dipendenze dirette
- *   da implementazioni concrete (es. bcrypt, RS256).
- * - Se un domani vuoi cambiare algoritmo (es. Argon2 invece di bcrypt, HS256 invece di RS256),
- *   basta modificare qui, senza toccare controller o servizi.
+ * Description:
+ * Implements the Factory Method Pattern to create security-related objects.
+ *
+ * Objective:
+ * - Centralize the instantiation of security strategies (password hashing, JWT).
+ * - Decouple services from concrete implementations (e.g., bcrypt vs Argon2, RS256 vs HS256).
+ * - Allow easy replacement of algorithms without modifying controllers or services.
  */
 export class SecurityFactory {
     /**
-     * 🔑 Factory Method: PasswordHasher
+     * makePasswordHasher
      *
-     * Flusso:
-     * 1. Recupera il numero di `saltRounds` dalle variabili d’ambiente
-     *    (`SALT_ROUNDS`, default 12).
-     * 2. Restituisce un’istanza di `BcryptPasswordHasher`.
+     * Description:
+     * Factory method that creates a password hasher implementation.
      *
-     * 👉 Vantaggio: puoi sostituire bcrypt con Argon2 o un mock per i test senza
-     *    modificare il resto dell’applicazione.
+     * Objective:
+     * - Retrieve the number of salt rounds from the environment variable `SALT_ROUNDS`.
+     * - Return an instance of `BcryptPasswordHasher` configured with the chosen salt rounds.
+     * - Allow future replacement with other algorithms such as Argon2 or a mock hasher for testing.
+     *
+     * Returns:
+     * @returns {PasswordHasher} - A password hasher implementation.
      */
     static makePasswordHasher(): PasswordHasher {
-        const rounds = Number(process.env.SALT_ROUNDS ?? 12);
-        return new BcryptPasswordHasher(rounds);
+        try {
+            const rounds = Number(environment.saltRounds ?? 12);
+            logger.info("[SecurityFactory] Creating PasswordHasher with bcrypt", { saltRounds: rounds });
+            return new BcryptPasswordHasher(rounds);
+        } catch (error: any) {
+            logger.error("[SecurityFactory] Failed to create PasswordHasher", {
+                error: error?.message,
+                stack: error?.stack,
+            });
+            throw error;
+        }
     }
 
     /**
-     * 🔐 Factory Method: JwtStrategy
+     * makeJwtStrategy
      *
-     * Flusso:
-     * 1. Oggi restituisce sempre una `RS256JwtStrategy` (firma con chiavi private/public).
-     * 2. Domani puoi aggiungere uno switch basato su `environment.jwtAlgorithm`
-     *    per supportare algoritmi diversi (es. HS256).
+     * Description:
+     * Factory method that creates a JWT strategy implementation.
      *
-     * 👉 Vantaggio: decoupling → i servizi che usano JWT dipendono solo da `JwtStrategy`,
-     *    non da un’implementazione concreta.
+     * Objective:
+     * - Currently returns an instance of `RS256JwtStrategy` for asymmetric signing.
+     * - Can be extended in the future to select strategies dynamically (e.g., RS256, HS256)
+     *   based on environment configuration.
+     *
+     * Returns:
+     * @returns {JwtStrategy} - A JWT strategy implementation.
      */
     static makeJwtStrategy(): JwtStrategy {
-        // Esempio evolutivo:
-        // if (environment.jwtAlgorithm === "HS256") return new HS256JwtStrategy();
-        return new RS256JwtStrategy();
+        try {
+            logger.info("[SecurityFactory] Creating JWT strategy with RS256");
+            // Example of a possible evolution:
+            // if (environment.jwtAlgorithm === "HS256") return new HS256JwtStrategy();
+            return new RS256JwtStrategy();
+        } catch (error: any) {
+            logger.error("[SecurityFactory] Failed to create JWT strategy", {
+                error: error?.message,
+                stack: error?.stack,
+            });
+            throw error;
+        }
     }
 }

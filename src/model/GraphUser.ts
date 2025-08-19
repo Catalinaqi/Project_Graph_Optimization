@@ -1,83 +1,114 @@
-import { DataTypes, InferAttributes, InferCreationAttributes, Model, Sequelize } from 'sequelize';
-import { GraphRoleUserEnum } from '@/common/enums';
-
 /**
- * 👤 Modello Sequelize: GraphUser
+ * GraphUser Model
  *
- * Descrizione generale:
- * - Rappresenta la tabella `graph_user` nel database.
- * - Gestisce gli utenti del sistema con i campi principali:
- *   🔹 id (UUID)
- *   🔹 email
- *   🔹 password hashata
- *   🔹 ruolo (user/admin)
- *   🔹 saldo token
- *   🔹 timestamp di creazione/aggiornamento
+ * Objective:
+ * - Manage system users (admin, regular users).
+ * - Store authentication credentials and token balance.
+ * - Provide a strongly-typed ORM model for queries and CRUD operations.
  *
- * Note:
- * - `tokens_user` è definito come DECIMAL in DB → gestito come stringa in TS.
- * - `role_user` è tipizzato con `GraphRoleUserEnum` per garantire valori validi.
+ * Fields:
+ * - id_user (INTEGER): Primary key.
+ * - email_user (string): Unique email.
+ * - password_user (string): Hashed password.
+ * - role_user (GraphRoleUserEnum): User role (`user` or `admin`).
+ * - tokens_user (string): Token balance (DECIMAL in DB, mapped as string in TS).
+ * - created_at_user (Date): Timestamp of creation.
+ * - updated_at_user (Date): Timestamp of last update.
  */
-export class GraphUser extends Model<InferAttributes<GraphUser>, InferCreationAttributes<GraphUser>> {
-    declare id_user: string;
+
+import { DataTypes, InferAttributes, InferCreationAttributes, Model, Sequelize } from "sequelize";
+import { GraphRoleUserEnum } from "@/common/enums";
+import logger from "@/config/logger";
+
+export class GraphUser extends Model<
+    InferAttributes<GraphUser>,
+    InferCreationAttributes<GraphUser>
+> {
+    declare id_user: number;
     declare email_user: string;
     declare password_user: string;
     declare role_user: GraphRoleUserEnum;
-    declare tokens_user: string; // DECIMAL in DB → string per default Sequelize
-
+    declare tokens_user: string; // DECIMAL(12,2) returned as string
     declare created_at_user: Date;
     declare updated_at_user: Date;
 
     /**
-     * ⚙️ Inizializzazione del modello
-     *
-     * Flusso:
-     * 1. Definisce i campi della tabella `graph_user` con i rispettivi tipi e vincoli.
-     * 2. Configura nome tabella, modelName e mapping dei campi `createdAt` e `updatedAt`.
-     * 3. Restituisce il modello pronto da usare nei DAO/Repository.
-     *
-     * @param sequelize - istanza Sequelize collegata al DB
+     * Initialize the Sequelize model (attributes & options).
+     * @param sequelize Sequelize instance used to register the model.
      */
-    static initModel(sequelize: Sequelize) {
+    static initModel(sequelize: Sequelize): typeof GraphUser {
+        logger.debug("[GraphUser] Initializing model...");
+
         GraphUser.init(
             {
-                id_user: {
-                    type: DataTypes.UUID,
-                    defaultValue: DataTypes.UUIDV4,
-                    primaryKey: true,
-                },
-                email_user: {
-                    type: DataTypes.STRING(255),
-                    allowNull: false,
-                    unique: true,
-                },
-                password_user: {
-                    type: DataTypes.STRING(255),
-                    allowNull: false,
-                },
+                id_user: { type: DataTypes.INTEGER, autoIncrement: true, primaryKey: true, allowNull: false },
+                email_user: { type: DataTypes.STRING(255), allowNull: false, unique: true },
+                password_user: { type: DataTypes.STRING(255), allowNull: false },
                 role_user: {
-                    type: DataTypes.ENUM(...Object.values(GraphRoleUserEnum)),
+                    type: DataTypes.ENUM("user", "admin"), // must match DB enum values
                     allowNull: false,
-                    defaultValue: GraphRoleUserEnum.USER,
+                    defaultValue: "user",
                 },
-                tokens_user: {
-                    type: DataTypes.DECIMAL(12, 2),
-                    allowNull: false,
-                    defaultValue: '0.00',
-                },
+                tokens_user: { type: DataTypes.DECIMAL(12, 2), allowNull: false, defaultValue: "0.00" },
                 created_at_user: { type: DataTypes.DATE, allowNull: false, defaultValue: DataTypes.NOW },
                 updated_at_user: { type: DataTypes.DATE, allowNull: false, defaultValue: DataTypes.NOW },
             },
             {
                 sequelize,
-                tableName: 'graph_user',
-                modelName: 'GraphUser',
-                timestamps: true,
-                createdAt: 'created_at_user',
-                updatedAt: 'updated_at_user',
-                underscored: true,
+                tableName: "graph_user",
+                modelName: "GraphUser",
+                timestamps: false,
+                hooks: {
+                    beforeUpdate: (instance) => { instance.updated_at_user = new Date(); },
+                },
             }
         );
         return GraphUser;
+    }
+
+    /**
+     * Register associations to other models.
+     * @param models Object containing all initialized models.
+     */
+    static associate(models: any) {
+        logger.debug("[GraphUser] Registering associations...");
+
+        GraphUser.hasMany(models.GraphModel, { foreignKey: "id_owner_user", as: "models", onDelete: "CASCADE" });
+
+        GraphUser.hasMany(models.GraphTokenTransaction, {
+            foreignKey: "id_user",
+            as: "tokenTransactions",
+            onDelete: "CASCADE",
+        });
+
+        GraphUser.hasMany(models.GraphTokenTransaction, {
+            foreignKey: "id_performer_user",
+            as: "performedTokenTransactions",
+            onDelete: "SET NULL",
+        });
+
+        GraphUser.hasMany(models.GraphVersion, {
+            foreignKey: "id_creator_user",
+            as: "createdVersions",
+            onDelete: "RESTRICT",
+        });
+
+        GraphUser.hasMany(models.GraphWeightChangeRequest, {
+            foreignKey: "id_requester_user",
+            as: "weightChangeRequests",
+            onDelete: "RESTRICT",
+        });
+
+        GraphUser.hasMany(models.GraphWeightChangeRequest, {
+            foreignKey: "id_reviewer_user",
+            as: "reviewedWeightChangeRequests",
+            onDelete: "SET NULL",
+        });
+
+        GraphUser.hasMany(models.GraphSimulation, {
+            foreignKey: "id_user",
+            as: "simulations",
+            onDelete: "RESTRICT",
+        });
     }
 }

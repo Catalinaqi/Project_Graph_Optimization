@@ -1,79 +1,82 @@
-// src/common/middleware/authentication.middleware.ts
 import { NextFunction, Request, Response } from "express";
 import logger from "@/config/logger";
 import { getError } from "@/common/util/api.error.util";
 import { ErrorEnum } from "@/common/enums";
 import { UserPayloadTypeSafe } from "@/common/types";
-import { SecurityFactory } from "@/common/security/security.factory"; // ⬅️ integriamo la factory
+import { SecurityFactory } from "@/common/security/security.factory";
 
-// Creiamo la strategia JWT una sola volta (tramite factory method)
-// ✅ Questo approccio permette di cambiare algoritmo (HS256 ↔ RS256) senza modificare il middleware
+// Create the JWT strategy once via the factory.
+// This approach allows switching algorithms (e.g., HS256 ↔ RS256) without changing the middleware.
 const jwt = SecurityFactory.makeJwtStrategy();
 
 /**
- * Middleware di autenticazione con JWT
+ * authenticationMiddleware
  *
- * 🎯 Obiettivo:
- *  - Proteggere le rotte che richiedono autenticazione.
- *  - Validare il token JWT presente nell'header `Authorization`.
- *  - Estrarre il payload e memorizzarlo in `req.user` per l'uso nei controller.
+ * Description:
+ * Express middleware that authenticates requests using a JWT provided in the
+ * Authorization header. If the token is valid, the decoded payload is attached
+ * to `req.user` and the request proceeds. Otherwise, a standardized unauthorized
+ * error is forwarded to the error handler.
  *
- * 🔄 Flusso:
- *  1. Genera o recupera un `request id` (rid) per il tracciamento nei log.
- *  2. Legge l'header `Authorization` dalla richiesta.
- *  3. Valida che l'header sia presente e abbia il formato corretto `Bearer <token>`.
- *  4. Estrae il token.
- *  5. Verifica il token utilizzando la strategia JWT ottenuta dalla factory.
- *  6. Se valido, salva il payload in `req.user` e continua la catena middleware.
- *  7. Se non valido o scaduto, restituisce un errore 401 Unauthorized.
+ * Objective:
+ * - Validate presence and format of the Authorization header.
+ * - Verify the JWT using the configured strategy.
+ * - Attach the decoded user payload to the request object.
+ *
+ * Parameters:
+ * @param req {Request} - The incoming HTTP request. Expects an Authorization header with a Bearer token.
+ * @param res {Response} - The HTTP response (unused in this middleware).
+ * @param next {NextFunction} - Callback to pass control to the next middleware or error handler.
+ *
+ * Returns:
+ * @returns {void} - Calls `next()` on success or forwards an error to the error handler.
  */
-export function authenticationMiddleware(req: Request, res: Response, next: NextFunction): void {
-    // STEP 1: Creiamo o recuperiamo un ID di richiesta per tracciamento log
+export function authenticationMiddleware(req: Request, _res: Response, next: NextFunction): void {
+    // Create or retrieve a request identifier for traceability
     const rid: string =
         (req.headers["x-request-id"] as string) || Math.random().toString(36).slice(2);
 
     try {
-        logger.debug("[AUTH] [STEP 1] Inizio autenticazione rid=%s", rid);
+        logger.debug("[Auth] Starting authentication", { rid });
 
-        // STEP 2: Leggiamo l'header Authorization (supporta case-insensitive e spazi extra)
+        // Read Authorization header (case-insensitive, trims extra spaces)
         const rawHeader = (req.get("authorization") ?? req.headers.authorization ?? "").trim();
         if (!rawHeader) {
-            logger.warn("[AUTH] [STEP 2] Header Authorization mancante rid=%s", rid);
-            throw getError(ErrorEnum.BAD_REQUEST_ERROR);
+            logger.warn("[Auth] Missing Authorization header", { rid });
+            throw getError(ErrorEnum.MISSING_AUTH_HEADER);
         }
 
-        // STEP 3: Validiamo formato Bearer + token (case-insensitive per 'Bearer')
+        // Expect format: "Bearer <token>"
         const [scheme, token] = rawHeader.split(/\s+/);
         if (!/^Bearer$/i.test(scheme) || !token) {
-            logger.warn("[AUTH] [STEP 3] Formato Authorization non valido value=%s rid=%s", rawHeader, rid);
-            throw getError(ErrorEnum.BAD_REQUEST_ERROR);
+            logger.warn("[Auth] Malformed Authorization header", { rid, value: rawHeader });
+            throw getError(ErrorEnum.BEARER_TOKEN_MALFORMED);
         }
 
-        // STEP 4-5: Verifichiamo il token usando la strategia JWT (RS256 di default)
-        // La strategia lancia eccezione se token invalido o scaduto
-        // const payload = jwt.verify<UserPayloadTypeSafe>(token);
+        // Verify token using the configured JWT strategy (exceptions are thrown on failure)
+        logger.debug("[Auth] Verifying JWT token", { rid });
         const payload = jwt.verify(token) as UserPayloadTypeSafe;
 
-        req.user = payload;
+        // Attach payload to request for downstream usage
+        (req as any).user = payload;
 
-        // STEP 6: Autenticazione completata con successo
-        logger.info(
-            "[AUTH] [STEP 6] Autenticazione OK userId=%s role=%s rid=%s",
-            payload.id,
-            (payload as any).role,
-            rid
-        );
+        logger.info("[Auth] Authentication successful", {
+            rid,
+            userId: payload?.id,
+            role: (payload as any)?.role,
+        });
 
-        return next(); // Continua con il prossimo middleware o controller
+        next();
     } catch (err: unknown) {
-        // Gestione errori centralizzata
         const message = err instanceof Error ? err.message : String(err);
-        logger.error("[AUTH] [FAIL] Errore autenticazione rid=%s err=%s", rid, message, {
+        logger.error("[Auth] Authentication failed", {
+            rid,
+            message,
             stack: err instanceof Error ? err.stack : undefined,
         });
 
-        // Mappiamo sempre a errore 401 Unauthorized per sicurezza
+        // Always map to a 401 Unauthorized for security unless you need finer-grained errors
         const mapped = getError(ErrorEnum.UNAUTHORIZED_ERROR);
-        return next(mapped);
+        next(mapped);
     }
 }

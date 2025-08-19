@@ -3,33 +3,39 @@ import environment from "@/config/enviroment";
 import logger from "@/config/logger";
 
 /**
- * 🗄️ Classe Database (Singleton)
+ * Database Class (Singleton)
  *
- * Descrizione:
- * - Implementa il **Design Pattern Singleton**: una sola istanza di `Sequelize` viene creata e riutilizzata.
- * - Configura la connessione a PostgreSQL leggendo le variabili da `environment`.
- * - Espone metodi statici per:
- *   🔹 `getInstance` → ottenere l'istanza condivisa di Sequelize
- *   🔹 `testConnection` → verificare che il DB risponda (health check)
- *   🔹 `sync` → sincronizzare i modelli con lo schema (solo in sviluppo!)
+ * Description:
+ * Implements the Singleton Design Pattern to ensure that only one instance
+ * of Sequelize is created and reused throughout the application.
  *
- * Flusso con logger:
- * 1. Se non esiste un'istanza, viene creata (connessione a PostgreSQL).
- * 2. Ogni query SQL viene loggata in `debug` tramite Winston.
- * 3. Connessione testata con log di successo o di errore.
+ * Objective:
+ * - Configure the PostgreSQL connection using environment variables.
+ * - Provide static methods to:
+ *   - getInstance: return the shared Sequelize instance.
+ *   - testConnection: check if the database is reachable.
+ *   - sync: synchronize Sequelize models with the database schema (useful in development).
  */
-
 export default class Database {
-  // 🔒 Istanza Singleton di Sequelize
+  /**
+   * Singleton instance of Sequelize.
+   */
   private static instance: Sequelize | null = null;
 
-
-  // 🚫 Costruttore privato → impedisce l'uso di `new Database()`
+  /**
+   * Private constructor to prevent instantiation with `new Database()`.
+   */
   private constructor() {}
 
   /**
-   * 📌 Restituisce l'istanza unica di Sequelize
-   * - Se non esiste, la crea con le opzioni di configurazione.
+   * getInstance
+   *
+   * Description:
+   * Returns the single Sequelize instance. If it does not exist yet,
+   * creates and configures a new one.
+   *
+   * Returns:
+   * @returns {Sequelize} - The Sequelize instance.
    */
   public static getInstance(): Sequelize {
     if (!Database.instance) {
@@ -42,7 +48,7 @@ export default class Database {
         nodeEnv,
       } = environment;
 
-      logger.info("➡️ [Database] Creazione nuova istanza Sequelize", {
+      logger.info("[Database] Creating new Sequelize instance", {
         host: postgresHost,
         port: postgresPort,
         db: postgresDB,
@@ -73,23 +79,30 @@ export default class Database {
           options,
       );
 
-      logger.info("✅ [Database] Istanza Sequelize creata con successo");
+      logger.info("[Database] Sequelize instance created successfully");
     }
     return Database.instance;
   }
 
   /**
-   * 🩺 Verifica la connessione al database.
-   * - Chiama `sequelize.authenticate()`
-   * - Logga successo o fallimento.
+   * testConnection
+   *
+   * Description:
+   * Tests the connection to the PostgreSQL database.
+   *
+   * Objective:
+   * Calls `sequelize.authenticate()` to verify the database is reachable.
+   *
+   * Returns:
+   * @returns {Promise<void>} - Resolves if the connection is successful, rejects otherwise.
    */
   public static async testConnection(): Promise<void> {
     const sequelize = this.getInstance();
     try {
       await sequelize.authenticate();
-      logger.info("✅ [Database] Connessione al DB riuscita");
+      logger.info("[Database] Database connection successful");
     } catch (error: any) {
-      logger.error("❌ [Database] Errore di connessione al DB", {
+      logger.error("[Database] Database connection failed", {
         message: error.message,
       });
       throw error;
@@ -97,19 +110,32 @@ export default class Database {
   }
 
   /**
-   * 🔄 Sincronizza i modelli con il database
-   * - Utile solo in sviluppo (attenzione con `force: true` perché droppa le tabelle!)
+   * sync
+   *
+   * Description:
+   * Synchronizes the Sequelize models with the PostgreSQL database.
+   *
+   * Objective:
+   * Useful in development to create or update tables automatically.
+   * Use caution with `force: true` as it drops existing tables.
+   *
+   * Parameters:
+   * @param options.force {boolean} - If true, drops and recreates tables.
+   * @param options.alter {boolean} - If true, updates existing tables to match models.
+   *
+   * Returns:
+   * @returns {Promise<void>} - Resolves when synchronization is complete.
    */
   public static async sync(options?: { force?: boolean; alter?: boolean }) {
     const sequelize = this.getInstance();
     try {
-      logger.info("➡️ [Database] Avvio sync dei modelli", options);
+      logger.info("[Database] Starting model synchronization", options);
       await sequelize.sync({
         ...options,
       });
-      logger.info("✅ [Database] Sync completato con successo");
+      logger.info("[Database] Model synchronization completed successfully");
     } catch (error: any) {
-      logger.error("❌ [Database] Errore durante il sync dei modelli", {
+      logger.error("[Database] Error during model synchronization", {
         message: error.message,
       });
       throw error;

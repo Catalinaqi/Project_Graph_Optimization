@@ -2,45 +2,66 @@ import express from "express";
 import api from "@/router";
 import { errorHandler } from "@/middleware/error.middleware";
 import logger from "@/config/logger";
-import {requestId} from '@/middleware/requestId';
 
 /**
- * 🚀 Applicazione principale Express
+ * Main Express Application
  *
- * Descrizione:
- * - Inizializza l'app Express con i middleware fondamentali.
- * - Registra i router dell'API (`/api`).
- * - Registra l'error handler globale.
- *
- * Flusso con logger:
- * 1. Avvio dell'applicazione: log informativo al bootstrap.
- * 2. Ogni richiesta in ingresso viene intercettata e loggata (metodo + url).
- * 3. Se avviene un errore, passa ad `errorHandler`, che logga e restituisce risposta JSON.
+ * Description:
+ * Initializes the Express application with core middleware,
+ * mounts the API routes, and registers the global error handler.
  */
-
 const app = express();
 
-// 🧩 Middleware built-in: parsing JSON
+/**
+ * Middleware: JSON Parser
+ *
+ * Description:
+ * Parses incoming requests with JSON payloads.
+ */
 app.use(express.json());
 
-app.use(requestId)
 
-// 🔎 Log di ogni richiesta in ingresso (prima di passare ai router)
+/**
+ * Middleware: Request Logger
+ *
+ * Description:
+ * Logs basic information about each incoming request.
+ *
+ * Parameters:
+ * @param req.method {string} - HTTP method of the request.
+ * @param req.originalUrl {string} - Original URL of the request.
+ */
 app.use((req, _res, next) => {
-    logger.info(`➡️ [App] Richiesta ricevuta`, {
+    logger.info('[App] Incoming request', {
         method: req.method,
         url: req.originalUrl,
     });
     next();
 });
 
-// 📌 Monta le rotte API sotto il prefisso /api
+/**
+ * API Router
+ *
+ * Description:
+ * Mounts all API endpoints under the /api prefix.
+ */
 app.use("/api", api);
 
-// 🧯 Gestione errori globale
+/**
+ * Middleware: Global Error Handler
+ *
+ * Description:
+ * Handles all errors thrown in the application,
+ * logs them, and returns a standardized JSON response.
+ */
 app.use(errorHandler);
 
-// ✅ Log quando l'app è pronta
-logger.info("✅ Applicazione Express inizializzata e pronta a ricevere richieste.");
+/**
+ * Application Initialization Log
+ *
+ * Description:
+ * Logs when the Express application is fully initialized and ready.
+ */
+logger.info("[App] Express application initialized and ready to receive requests.");
 
 export default app;

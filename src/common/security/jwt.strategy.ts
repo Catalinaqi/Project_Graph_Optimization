@@ -1,18 +1,18 @@
 import type { UserPayloadTypeSafe } from "@/common/types";
 import JwtUtils from "@/common/util/jwt.util";
-import {loggers} from 'winston';
+import logger from "@/config/logger";
 
 /**
- * 🧩 Interfaccia JwtStrategy
+ * JwtStrategy
  *
- * Descrizione:
- * - Definisce il "contratto" per tutte le strategie JWT.
- * - Permette di avere più implementazioni (es. HS256, RS256, mock per i test)
- *   senza cambiare il resto del codice.
+ * Description:
+ * Defines the contract for all JWT strategies.
+ * Allows multiple implementations (RS256, HS256, mock for tests) without
+ * changing the rest of the application.
  *
- * Metodi:
- * - `sign(payload)`: genera un token JWT a partire da un payload utente.
- * - `verify(token)`: valida un token JWT e restituisce il payload decodificato.
+ * Methods:
+ * - sign(payload): generates a JWT token from a user payload.
+ * - verify(token): validates a JWT token and returns the decoded payload.
  */
 export interface JwtStrategy {
     sign(payload: Omit<UserPayloadTypeSafe, "iat" | "exp">): string;
@@ -20,25 +20,72 @@ export interface JwtStrategy {
 }
 
 /**
- * 🔐 Implementazione concreta di JwtStrategy con algoritmo RS256
+ * RS256JwtStrategy
  *
- * Descrizione:
- * - Usa la classe `JwtUtils` (già implementata nel progetto) per generare
- *   e verificare token firmati con chiavi asimmetriche (RS256).
- * - Incapsula la logica in modo che, se un domani si volesse cambiare algoritmo
- *   (es. HS256 o altro), basta creare una nuova classe che implementa `JwtStrategy`.
+ * Description:
+ * Concrete implementation of JwtStrategy using the RS256 algorithm.
  *
- * Flusso:
- * 1. `sign(payload)` → richiama `JwtUtils.generateToken` per firmare il payload.
- * 2. `verify(token)` → richiama `JwtUtils.verifyToken` per validare il token e
- *    restituire un `UserPayloadTypeSafe`.
+ * Objective:
+ * - Delegate signing and verification to JwtUtils.
+ * - Encapsulate the logic so that changing algorithms requires only
+ *   creating a new class implementing JwtStrategy.
+ *
+ * Methods:
+ * - sign(payload): signs a user payload with the private key.
+ * - verify(token): verifies the JWT token using the public key.
  */
 export class RS256JwtStrategy implements JwtStrategy {
+    /**
+     * sign
+     *
+     * Description:
+     * Generates a JWT token from a user payload.
+     *
+     * Parameters:
+     * @param payload {Omit<UserPayloadTypeSafe, "iat" | "exp">} - The user payload without issued-at and expiry claims.
+     *
+     * Returns:
+     * @returns {string} - A signed JWT token.
+     */
     sign(payload: Omit<UserPayloadTypeSafe, "iat" | "exp">): string {
-        return JwtUtils.generateToken(payload as any);
+        try {
+            logger.debug("[RS256JwtStrategy] Signing JWT token", { userId: payload.id });
+            const token = JwtUtils.generateToken(payload as any);
+            logger.info("[RS256JwtStrategy] JWT token successfully signed", { userId: payload.id });
+            return token;
+        } catch (error: any) {
+            logger.error("[RS256JwtStrategy] Failed to sign JWT token", {
+                error: error?.message,
+                stack: error?.stack,
+            });
+            throw error;
+        }
     }
 
+    /**
+     * verify
+     *
+     * Description:
+     * Validates a JWT token and returns the decoded user payload.
+     *
+     * Parameters:
+     * @param token {string} - The JWT token to verify.
+     *
+     * Returns:
+     * @returns {UserPayloadTypeSafe} - The decoded user payload if the token is valid.
+     */
     verify(token: string): UserPayloadTypeSafe {
-        return JwtUtils.verifyToken(token) as UserPayloadTypeSafe;
+        try {
+            logger.debug("[RS256JwtStrategy] Verifying JWT token");
+            const payload = JwtUtils.verifyToken(token) as UserPayloadTypeSafe;
+            logger.info("[RS256JwtStrategy] JWT token successfully verified", { userId: payload.id });
+            return payload;
+        } catch (error: any) {
+            logger.error("[RS256JwtStrategy] Failed to verify JWT token", {
+                error: error?.message,
+                stack: error?.stack,
+            });
+            throw error;
+        }
     }
 }

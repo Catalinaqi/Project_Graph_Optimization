@@ -2,18 +2,17 @@ import { StatusCodes } from "http-status-codes";
 import { ErrorEnum } from "@/common/enums";
 
 /**
- * ⚠️ Classe ErrorObj
+ * ErrorObj
  *
- * Descrizione:
- * - Estende la classe `Error` nativa di JS per includere:
- *   🔹 `status`: codice HTTP da restituire
- *   🔹 `msg`: messaggio da mostrare al client
- *   🔹 `type`: tipo di errore (mappato in `ErrorEnum`)
- * - Consente di restituire un errore strutturato ai middleware di Express.
+ * Description:
+ * Extends the native JavaScript `Error` class to include:
+ * - `status`: HTTP status code to return to the client.
+ * - `msg`: Message to show to the client.
+ * - `type`: Error type mapped from `ErrorEnum`.
  *
- * Flusso:
- * 1. Quando si crea un `ErrorObj`, viene popolato con status, msg e type.
- * 2. Il metodo `toJSON()` permette di serializzare l’errore in una risposta JSON standardizzata.
+ * Objective:
+ * Provide a structured error object that can be passed through
+ * Express middleware and returned as a consistent JSON response.
  */
 export class ErrorObj extends Error {
     status: number;
@@ -21,28 +20,43 @@ export class ErrorObj extends Error {
     type: ErrorEnum;
 
     constructor(status: number, msg: string, type: ErrorEnum) {
-        super(msg);                // <- importante
+        super(msg);
         this.name = type;
         this.status = status;
         this.msg = msg;
         this.type = type;
         Object.setPrototypeOf(this, new.target.prototype);
-        if (Error.captureStackTrace) Error.captureStackTrace(this, ErrorObj);
+        if (Error.captureStackTrace) {
+            Error.captureStackTrace(this, ErrorObj);
+        }
     }
 
-    // 🔄 Conversione in JSON per la risposta HTTP
+    /**
+     * toJSON
+     *
+     * Description:
+     * Converts the error object into a JSON-friendly format.
+     *
+     * Returns:
+     * @returns {Object} - An object containing status and msg fields.
+     */
     toJSON() {
         return { status: this.status, msg: this.msg };
     }
 }
 
 /**
- * 🗂️ Configurazione errori (ErrorEnum → status + messaggio)
+ * errorConfig
  *
- * Descrizione:
- * - Associa ad ogni tipo di errore (`ErrorEnum`) un codice HTTP e un messaggio standard.
- * - Centralizza la definizione per evitare duplicazioni nei controller o nei middleware.
- * - Consente uniformità nelle risposte d’errore al client.
+ * Description:
+ * Maps each `ErrorEnum` type to an HTTP status code and a default message.
+ *
+ * Objective:
+ * - Centralize error definitions to avoid duplication.
+ * - Ensure consistent error responses across the application.
+ *
+ * Returns:
+ * @returns {Record<ErrorEnum, { status: number; msg: string }>}
  */
 export const errorConfig: Record<ErrorEnum, { status: number; msg: string }> = {
     [ErrorEnum.GENERIC_ERROR]: {
@@ -77,8 +91,6 @@ export const errorConfig: Record<ErrorEnum, { status: number; msg: string }> = {
         status: StatusCodes.BAD_REQUEST,
         msg: "Invalid JWT format.",
     },
-
-    // Errori specifici richiesti
     [ErrorEnum.EMAIL_ALREADY_REGISTERED_OR_INVALID]: {
         status: StatusCodes.BAD_REQUEST,
         msg: "Email already registered or invalid data.",
@@ -103,7 +115,6 @@ export const errorConfig: Record<ErrorEnum, { status: number; msg: string }> = {
         status: StatusCodes.NOT_FOUND,
         msg: "User not found.",
     },
-    // Nuevos errores para JWT y servidor
     [ErrorEnum.SERVER_ERROR]: {
         status: StatusCodes.INTERNAL_SERVER_ERROR,
         msg: "Internal server error.",
@@ -128,30 +139,33 @@ export const errorConfig: Record<ErrorEnum, { status: number; msg: string }> = {
         status: StatusCodes.BAD_REQUEST,
         msg: "Malformed Bearer token.",
     },
-
-
-
-
 };
 
-/**
- * 🏭 Factory getError
- *
- * Descrizione:
- * - Riceve un `ErrorEnum` e costruisce un `ErrorObj` corrispondente.
- * - Se il tipo non è mappato, restituisce un errore generico (500).
- *
- * Flusso:
- * 1. Cerca la configurazione corrispondente in `errorConfig`.
- * 2. Crea e ritorna un nuovo `ErrorObj` con `status`, `msg` e `type`.
- * 3. Questo oggetto verrà poi intercettato dal middleware `errorHandler` e serializzato in JSON.
- */
-export function getErrorFirts(type: ErrorEnum): ErrorObj {
-    const config = errorConfig[type] ?? errorConfig[ErrorEnum.GENERIC_ERROR];
-    return new ErrorObj(config.status, config.msg, type);
-}
 
-export function getError(type: ErrorEnum, overrideMsg?: string, overrideStatus?: number): ErrorObj {
+/**
+ * getError
+ *
+ * Description:
+ * Factory method that returns an `ErrorObj` for a given error type.
+ * Allows overriding of default message and status code.
+ *
+ * Parameters:
+ * @param type {ErrorEnum} - The error type.
+ * @param overrideMsg {string} - Optional message to replace the default.
+ * @param overrideStatus {number} - Optional status code to replace the default.
+ *
+ * Returns:
+ * @returns {ErrorObj} - An instance of ErrorObj.
+ */
+export function getError(
+    type: ErrorEnum,
+    overrideMsg?: string,
+    overrideStatus?: number
+): ErrorObj {
     const cfg = errorConfig[type] ?? errorConfig[ErrorEnum.GENERIC_ERROR];
-    return new ErrorObj(overrideStatus ?? cfg.status, overrideMsg ?? cfg.msg, type);
+    return new ErrorObj(
+        overrideStatus ?? cfg.status,
+        overrideMsg ?? cfg.msg,
+        type
+    );
 }
