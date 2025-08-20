@@ -1,4 +1,5 @@
 import { GraphRoleUserEnum } from "@/common/enums";
+import Joi from 'joi';
 
 /**
  * Interface: UserPayloadTypeSafe
@@ -34,8 +35,15 @@ interface SetNewBalanceResult  {
     rechargeTokens: number;
     totalRechargeTokens: number;
     updatedAt: string;
-};
+}
 
+
+interface ValidationError {
+    field: string;
+    message: string;
+    value?: Joi.ValidationErrorItem;
+    type: string;
+}
 
 /**
  * Interface: Enviroment
@@ -108,4 +116,4 @@ interface Enviroment {
     adminTokens?: number;
 }
 
-export { Enviroment, UserPayloadTypeSafe, SetNewBalanceResult};
+export { Enviroment, UserPayloadTypeSafe, SetNewBalanceResult,ValidationError};

@@ -1,0 +1,93 @@
+import Joi from "joi";
+
+/** id numérico en params  (/api/models/:id) */
+export const IdSchema = Joi.object({
+  id: Joi.number().integer().positive().required(),
+});
+
+/** auth + users (igual que tenías) */
+export const UserSchema = {
+  register: Joi.object({
+    email: Joi.string().email().required(),
+    password: Joi.string().min(8).required(),
+  }),
+  login: Joi.object({
+    email: Joi.string().email().required(),
+    password: Joi.string().required(),
+  }),
+  recharge: Joi.object({
+    email: Joi.string().email().required(),
+    newBalance: Joi.alternatives()
+        .try(Joi.number().min(0), Joi.string().pattern(/^\d+(\.\d+)?$/))
+        .required()
+        .messages({ "alternatives.match": "newBalance must be a valid number >= 0" }),
+    reason: Joi.string().max(200).optional(),
+  }),
+};
+
+/** ===== Modelos y grafos ===== */
+
+/** grafo compatible con node-dijkstra: { A: {B: 1.2}, B: {C: 0.7} } */
+const GraphWeightsSchema = Joi.object()
+    .pattern(
+        Joi.string().min(1), // nodo
+        Joi.object().pattern(
+            Joi.string().min(1),            // vecino
+            Joi.number().greater(0).precision(6).required() // peso > 0
+        )
+    )
+    .required()
+    // Check mínimo: al menos 1 nodo y 1 arco
+    .custom((value, helpers) => {
+      const nodes = Object.keys(value).length;
+      const edges = Object.values(value).reduce((a: number, o: any) => a + Object.keys(o).length, 0);
+      if (nodes === 0 || edges === 0) {
+        return helpers.error("any.custom", { message: "graph must have at least 1 node and 1 edge" });
+      }
+      return value;
+    }, "graph size validation")
+    .messages({ "any.custom": "{{#message}}" });
+
+export const GraphSchema = {
+  // POST /api/models  (crear modelo)
+  create: Joi.object({
+    name: Joi.string().min(3).max(80).required(),
+    description: Joi.string().max(10000).allow("").optional(),
+    graph: GraphWeightsSchema,
+  }),
+
+  // GET /api/models/:id/execute?start=&goal=
+  executeQuery: Joi.object({
+    start: Joi.string().min(1).required(),
+    goal: Joi.string().min(1).required(),
+  }),
+
+  // (si más adelante usas filtros con modelId → ahora es numérico)
+  requestsFilter: Joi.object({
+    modelId: Joi.number().integer().positive().optional(),
+    status: Joi.string().valid("pending", "approved", "rejected").optional(),
+    sentFrom: Joi.date().iso().optional(),
+    sentTo: Joi.date().iso().optional(),
+  }),
+
+  versionsFilter: Joi.object({
+    modifiedFrom: Joi.date().iso().optional(),
+    modifiedTo: Joi.date().iso().optional(),
+    nodes: Joi.number().integer().min(1).optional(),
+    edges: Joi.number().integer().min(1).optional(),
+  }),
+
+  changeWeight: Joi.object({
+    from: Joi.string().required(),
+    to: Joi.string().required(),
+    newWeight: Joi.number().positive().precision(6).required(),
+  }),
+
+  simulate: Joi.object({
+    from: Joi.string().required(),
+    to: Joi.string().required(),
+    start: Joi.number().positive().required(),
+    stop: Joi.number().positive().greater(Joi.ref("start")).required(),
+    step: Joi.number().positive().less(Joi.ref("stop")).required(),
+  }),
+};
