@@ -1,6 +1,11 @@
 import Joi from "joi";
 
 /** id numérico en params  (/api/models/:id) */
+
+/** :id numérico en params */
+export const IdNumericParams = Joi.object({
+  id: Joi.number().integer().positive().required(),
+});
 export const IdSchema = Joi.object({
   id: Joi.number().integer().positive().required(),
 });
@@ -48,6 +53,29 @@ const GraphWeightsSchema = Joi.object()
     }, "graph size validation")
     .messages({ "any.custom": "{{#message}}" });
 
+
+
+
+/** Grafo: { "A": { "B": 1.2, "C": 5 }, "B": { "A": 1.2 } } */
+export const graphSchema = Joi.object()
+    .pattern(
+        Joi.string().min(1),
+        Joi.object().pattern(Joi.string().min(1), Joi.number().positive())
+    )
+    .required();
+
+export const createModelSchema = Joi.object({
+  name: Joi.string().min(1).max(100).required(),
+  description: Joi.string().allow(null, "").max(500),
+  graph: graphSchema,
+});
+
+export const executeSchema = Joi.object({
+  start: Joi.string().min(1).required(),
+  goal: Joi.string().min(1).required(),
+});
+
+
 export const GraphSchema = {
   // POST /api/models  (crear modelo)
   create: Joi.object({
@@ -90,4 +118,8 @@ export const GraphSchema = {
     stop: Joi.number().positive().greater(Joi.ref("start")).required(),
     step: Joi.number().positive().less(Joi.ref("stop")).required(),
   }),
+
+
+
+
 };

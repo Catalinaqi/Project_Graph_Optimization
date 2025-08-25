@@ -1,4 +1,7 @@
 import type { GraphUser } from "@/model/GraphUser";
+import type { Transaction } from "sequelize";
+import type {Tx} from "@/common/types";
+
 
 /**
  * IUserRepository (Interface)
@@ -46,7 +49,7 @@ export interface IUserRepository {
      * Returns:
      * @returns {Promise<GraphUser | null>} - The user if found, otherwise null.
      */
-    getById(id: number): Promise<GraphUser | null>;
+    getById(id: number,opt?: Tx): Promise<GraphUser | null>;
 
     /**
      * create
@@ -77,7 +80,7 @@ export interface IUserRepository {
      *
      * Parameters:
      * @param email {string} - Email address of the target user.
-     * @param newBalance {number} - New token balance to set.
+     * @param rechargeTokens {number} - New token balance to set.
      * @param performerId {string} - Id of the admin/user performing the operation.
      * @param reason {string} - Optional reason for the recharge (e.g., "admin recharge").
      *
@@ -85,7 +88,7 @@ export interface IUserRepository {
      * @returns {Promise<{ email: string; previousTokens: number; newTokens: number; diff: number }>}
      * - An object with email, previous tokens, new tokens, and difference applied.
      */
-    updateBalanceByEmail(
+    updateTokensByEmail(
         email: string,
         rechargeTokens: number,
         performerId: number,
@@ -97,4 +100,14 @@ export interface IUserRepository {
         totalRechargeTokens: number;
         //diff: number;
     }>;
+
+    // cobro absoluto por id (usado por create/execute)
+    chargeByUserId(args: {
+        userId: number;
+        newBalance: number;
+        performerId: number;
+        reason: string;
+        transaction?: Transaction;
+    }): Promise<{ newBalance: number }>;
+
 }

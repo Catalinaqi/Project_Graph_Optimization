@@ -3,7 +3,7 @@ import { AuthController } from '@/controller/auth.controller';
 import logger from '@/config/logger';
 import {catchAsync} from '@/common/util/catchAsync';
 import {UserSchema} from '@/common/util/validation-schema';
-import {validationMiddleware} from '@/middleware/validate.middleware';
+//import {validationMiddleware} from '@/middleware/validate.middleware';
 
 /**
  * Authentication Router
@@ -34,19 +34,18 @@ const router = Router();
  * JSON containing the registered user information and/or a JWT token.
  */
 
-/*
+
 router.post('/register', (req, res, next) => {
     logger.info('[Auth Router] Handling request: POST /auth/register');
     AuthController.register(req, res, next);
     logger.info('[Auth Router] Finished handling request: POST /auth/register');
 });
-*/
+
+/*
 logger.info('[Auth Router] Handling request: POST /auth/register');
-
 router.post('/register', validationMiddleware(UserSchema.register), catchAsync(AuthController.register));
-
 logger.info('[Auth Router] Finished handling request: POST /auth/register');
-
+*/
 /**
  * POST /auth/login
  *

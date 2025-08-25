@@ -3,6 +3,8 @@ import api from "@/router";
 import { errorHandler } from "@/middleware/error.middleware";
 import logger from "@/config/logger";
 
+
+
 /**
  * Main Express Application
  *
@@ -55,6 +57,9 @@ app.use("/api", api);
  * logs them, and returns a standardized JSON response.
  */
 app.use(errorHandler);
+
+
+
 
 /**
  * Application Initialization Log

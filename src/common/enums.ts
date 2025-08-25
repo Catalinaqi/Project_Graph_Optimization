@@ -14,6 +14,16 @@ export enum GraphRoleUserEnum {
     ADMIN = "admin",
 }
 
+export enum ReasonTokenTransactionEnum {
+    RECHARGE = "recharge",
+    SEEDING = "seeding",
+    MODEL_CREATION = "recharge_model_creation",
+    RECHARGE_SEED_ADMIN = "recharge_seed_admin",
+}
+
+
+
+
 /**
  * Enum: GraphRequestStatusEnum
  *

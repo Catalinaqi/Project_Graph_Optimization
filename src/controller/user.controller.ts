@@ -88,7 +88,7 @@ export const UserController = {
 
             // 🟢 Step 4: Call the service layer to perform the actual recharge
             //   - email: user to update
-            //   - Number(newBalance): new token amount (casted to number)
+            //   - Number(rechargeTokens): new token amount (casted to number)
             //   - req.user!.id: ID of the admin performing the action
             //   - reason: explanation for the recharge
             const out = await UserService.adminRecharge(
