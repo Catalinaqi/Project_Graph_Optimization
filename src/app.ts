@@ -3,6 +3,7 @@ import api from "@/router";
 import { errorHandler } from "@/middleware/error.middleware";
 import logger from "@/config/logger";
 
+import { setupSwagger } from "@/config/swagger";
 
 
 /**
@@ -49,6 +50,7 @@ app.use((req, _res, next) => {
  */
 app.use("/api", api);
 
+
 /**
  * Middleware: Global Error Handler
  *
@@ -59,6 +61,7 @@ app.use("/api", api);
 app.use(errorHandler);
 
 
+setupSwagger(app); // habilita swagger en /api/docs
 
 
 /**

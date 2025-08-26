@@ -15,10 +15,9 @@ export enum GraphRoleUserEnum {
 }
 
 export enum ReasonTokenTransactionEnum {
-    RECHARGE = "recharge",
-    SEEDING = "seeding",
-    MODEL_CREATION = "recharge_model_creation",
-    RECHARGE_SEED_ADMIN = "recharge_seed_admin",
+    ADMIN_RECHARGE = "admin_recharge",
+    MODEL_CREATION_RECHARGE = "model_creation_recharge",
+    SEED_RECHARGE = "creation_user_recharge",
 }
 
 

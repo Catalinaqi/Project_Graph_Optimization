@@ -41,6 +41,8 @@
     "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^24.2.1",
     "@types/node-dijkstra": "^2.5.6",
+    "@types/swagger-ui-express": "^4.1.8",
+    "@types/yamljs": "^0.2.34",
     "@typescript-eslint/eslint-plugin": "^8.39.1",
     "@typescript-eslint/parser": "^8.39.1",
     "bcrypt": "^6.0.0",
@@ -58,6 +60,8 @@
     "ts-node-dev": "^2.0.0",
     "tsc-alias": "^1.8.16",
     "tsconfig-paths": "^4.2.0",
-    "winston": "^3.17.0"
+    "winston": "^3.17.0",
+    "yamljs": "^0.3.0"
+
   }
 }
