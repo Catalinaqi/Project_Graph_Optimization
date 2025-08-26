@@ -72,7 +72,7 @@ const UserService = {
      *
      * Parameters:
      * @param targetEmail {string} - Email of the user whose balance will be updated.
-     * @param newBalance {number} - New token balance to set for the user.
+     * @param rechargeTokens {number} - Recharge token to set for the user.
      * @param performerId {string} - Identifier of the admin performing the operation.
      * @param reason {string} - Optional reason for the balance update.
      *
@@ -89,7 +89,7 @@ const UserService = {
         try {
 
             logger.info("[UserService] Start process ... UserRepository.updateBalanceByEmail",)
-            const out = await UserRepository.updateBalanceByEmail(
+            const out = await UserRepository.updateTokensByEmail(
                 targetEmail,
                 rechargeTokens,
                 performerId,

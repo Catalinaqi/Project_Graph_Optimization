@@ -3,6 +3,8 @@ import environment from "@/config/enviroment";
 import Database from "@/database/database";
 import { ensureKeysExist } from "@/common/util/generateKeys";
 import { initModels } from "@/model"; // models entry point
+import listEndpoints from "express-list-endpoints";
+
 
 /**
  * bootstrap
@@ -41,9 +43,13 @@ async function bootstrap(): Promise<void> {
         logger.debug("[bootstrap] Testing database connection using Database.testConnection()");
         await Database.testConnection();
 
+
+
         // Dynamically import the Express application after models are ready
         logger.debug("[bootstrap] Dynamically importing Express application");
         const { default: app } = await import("@/app");
+
+        console.table(listEndpoints(app));
 
         // Start HTTP server
         logger.debug("[bootstrap] Starting HTTP server with app.listen()");

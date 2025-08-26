@@ -1,6 +1,13 @@
 import type { IUserRepository } from "./repository-interface/IUserRepository";
 import UserDao from "@/dao/UserDao";
 import logger from "@/config/logger";
+import {ReasonTokenTransactionEnum} from '@/common/enums';
+import {Transaction} from 'sequelize';
+import type {Tx} from "@/common/types";
+import {GraphUser} from '@/model/GraphUser';
+
+
+//export type Tx = { transaction?: Transaction };
 
 /**
  * UserRepository (Repository Implementation)
@@ -33,6 +40,8 @@ const UserRepository: IUserRepository = {
         return UserDao.findByEmail(email);
     },
 
+
+
     /**
      * getById (Method)
      *
@@ -45,9 +54,11 @@ const UserRepository: IUserRepository = {
      * Returns:
      * - `GraphUser` if found, otherwise `null`.
      */
-    getById(id) {
+    getById(id, opt?: Tx) {
         logger.debug("[UserRepository] getById called with id=%s", id);
-        return UserDao.findById(id);
+        return opt?.transaction
+            ? (GraphUser as any).findByPk(id, { transaction: opt.transaction })
+            : UserDao.findById(id);
     },
 
     /**
@@ -69,7 +80,6 @@ const UserRepository: IUserRepository = {
         return UserDao.createUser({
             email_user: email,
             password_user: passwordHash,
-            role_user: "user",
             tokens_user: initialTokens.toFixed(2),
         });
     },
@@ -83,7 +93,7 @@ const UserRepository: IUserRepository = {
      *
      * Parameters:
      * @param email {string} - Target user's email.
-     * @param newBalance {number} - New token balance to assign.
+     * @param rechargeTokens {number} - New token balance to assign.
      * @param performerId {string} - ID of the admin/user performing the operation.
      * @param reason {string | undefined} - Optional reason for the balance update (e.g., "admin recharge").
      *
@@ -93,10 +103,10 @@ const UserRepository: IUserRepository = {
      * Throws:
      * - Error with status 404 if the user is not found.
      */
-    async updateBalanceByEmail(email, rechargeTokens, performerId, reason) {
+    async updateTokensByEmail(email, rechargeTokens, performerId, reason) {
         // 🟢 Step 1: Log that the repository method was called, including parameters
         logger.debug(
-            "[UserRepository] Start execute ... UserDao.findByEmail with email=%s, newBalance=%s",
+            "[UserRepository] Start execute ... UserDao.findByEmail with email=%s, newBarechargeTokenslance=%s",
             email,
             rechargeTokens
         );
@@ -114,15 +124,15 @@ const UserRepository: IUserRepository = {
 
         // 🟢 Step 4: Update the user’s balance using the DAO
         //   - user.id_user → internal DB identifier
-        //   - newBalance → new balance of tokens
+        //   - rechargeTokens → new balance of tokens
         //   - performerId → admin (or actor) who performed the recharge
         //   - reason → optional reason for recharge (default: "admin recharge")
-        logger.info("[UserRepository] Start execute ... UserDao.setNewBalance for user: %s, newBalance=%s, performerId=%s, reason=%s",)
+        logger.info("[UserRepository] Start execute ... UserDao.setNewBalance for user: %s, rechargeTokens=%s, performerId=%s, reason=%s",)
         const tx = await UserDao.setNewBalance(
             user.id_user,
             rechargeTokens,
             performerId,
-            reason ?? "admin recharge"
+            reason || ReasonTokenTransactionEnum.RECHARGE
         );
         logger.info("[UserRepository] Finished execute ... UserDao.setNewBalance, updated successfully for user: %s", user.email_user);
 
@@ -130,6 +140,16 @@ const UserRepository: IUserRepository = {
         //   - user email
         //   - transaction details returned from DAO
         return { email: user.email_user, ...tx };
+    },
+
+
+    // usado por ModelService (cobro/ajuste absoluto dentro de la misma tx)
+    async chargeByUserId(args: {
+        userId: number; newBalance: number; performerId: number; reason: string; transaction?: Transaction;
+    }) {
+        const opt: Tx | undefined = args.transaction ? { transaction: args.transaction } : undefined;
+        await UserDao.setAbsoluteBalance(args.userId, args.newBalance, args.performerId, args.reason, opt);
+        return { newBalance: Number(args.newBalance) };
     }
 
 };

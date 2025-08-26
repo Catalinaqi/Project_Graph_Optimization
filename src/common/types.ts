@@ -1,6 +1,18 @@
 import { GraphRoleUserEnum } from "@/common/enums";
 import Joi from 'joi';
 
+// src/common/types/Tx.ts
+import type { Transaction } from "sequelize";
+
+/**
+ * Tx
+ * - Contenedor de opciones de transacción.
+ * - Se pasa opcionalmente a DAO/Repository para encadenar queries
+ *   dentro de la misma transacción.
+ */
+export type Tx = { transaction?: Transaction };
+
+
 /**
  * Interface: UserPayloadTypeSafe
  *
@@ -30,12 +42,30 @@ interface UserPayloadTypeSafe {
 }
 
 
+//**Result of setting a new balance for a user */
 interface SetNewBalanceResult  {
     previousTokens: number;
     rechargeTokens: number;
     totalRechargeTokens: number;
     updatedAt: string;
 }
+
+
+//**Input for creating a new model and for executing*/
+interface CreateModelInput  {
+    ownerUserId: number;
+    name: string;
+    description: string | null;
+    graph: Record<string, Record<string, number>>;
+}
+interface ExecuteInput  {
+    modelId: number;
+    start: string;
+    goal: string;
+    userId: number;
+}
+
+
 
 
 interface ValidationError {
@@ -116,4 +146,4 @@ interface Enviroment {
     adminTokens?: number;
 }
 
-export { Enviroment, UserPayloadTypeSafe, SetNewBalanceResult,ValidationError};
+export { Enviroment, UserPayloadTypeSafe, SetNewBalanceResult,ValidationError,CreateModelInput, ExecuteInput};

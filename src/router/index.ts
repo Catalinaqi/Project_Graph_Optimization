@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import authRouter from './auth.router';
 import userRouter from './user.router';
+import modelsRouter from './models.router';
 
 /**
  * 🧭 Router principale API
@@ -17,10 +18,15 @@ import userRouter from './user.router';
 
 const api = Router();
 
-// 🔐 Rotte di autenticazione (registrazione, login)
-api.use('/auth', authRouter);
+/** 🔐 Rutas de autenticación (registro, login, etc.) */
+api.use("/auth", authRouter);
 
-// 👤 Rotte utente (profilo, ricarica token, ecc.)
-api.use('/users', userRouter);
+/** 🧑 Rutas de usuario (perfil, recarga, etc.) */
+api.use("/users", userRouter);
+
+/** 🧠 Rutas de modelos de grafo */
+api.use("/models", modelsRouter);
+
+
 
 export default api;

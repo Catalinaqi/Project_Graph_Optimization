@@ -1,242 +1,163 @@
 import type { IUserDao } from "./dao-interface/IUserDao";
+import type { Tx } from "@/common/types";
+import type { SetNewBalanceResult } from "@/common/types";
 import { GraphUser } from "@/model/GraphUser";
 import { GraphTokenTransaction } from "@/model/GraphTokenTransaction";
-import logger from "@/config/logger";
-import { Sequelize } from "sequelize";
+import { Sequelize, Transaction } from "sequelize";
 import Database from "@/database/database";
-import type { SetNewBalanceResult } from "@/common/types";
-
+import logger from "@/config/logger";
+import { GraphRoleUserEnum, ReasonTokenTransactionEnum } from "@/common/enums";
 
 const sequelize: Sequelize = Database.getInstance();
 
-
 /**
- * UserDao (DAO Implementation)
- *
- * Description:
- * Concrete implementation of `IUserDao` that interacts directly with the database
- * using Sequelize models (`GraphUser`, `GraphTokenTransaction`).
- *
- * Objective:
- * - Perform low-level CRUD/persistence operations without business logic.
- * - Keep DB access concerns isolated from services and repositories.
+ * Aplica un nuevo saldo con lock pesimista y registra el movimiento en el ledger.
+ * Defensa fuerte contra NaN/valores inválidos.
  */
+async function applyBalanceWithLock(
+    t: Transaction,
+    args: { userId: number; performerId: number | null; reason: string; nextBalance: number }
+): Promise<SetNewBalanceResult> {
+    // 1) Cargar con lock
+    const user = await GraphUser.findByPk(args.userId, { transaction: t, lock: t.LOCK.UPDATE });
+    if (!user) { const e: any = new Error("User not found"); e.status = 404; throw e; }
+
+    // 2) Validar y normalizar
+    const prevNum = Number(user.tokens_user ?? 0);
+    const nextNum = Number(args.nextBalance);
+    if (!Number.isFinite(nextNum) || nextNum < 0) {
+        const e: any = new Error("nextBalance must be a finite number >= 0");
+        e.status = 400;
+        throw e;
+    }
+    const nextFixed = Number(nextNum.toFixed(2));
+    const deltaNum = Number((nextFixed - prevNum).toFixed(2));
+
+    // 3) Update del saldo
+    const [affected] = await GraphUser.update(
+        { tokens_user: nextFixed.toFixed(2), updated_at_user: new Date() },
+        { where: { id_user: args.userId }, transaction: t, returning: false }
+    );
+    if (affected !== 1) { const e: any = new Error("Balance update failed"); e.status = 409; throw e; }
+
+    // 4) Registrar en ledger
+    await GraphTokenTransaction.create(
+        {
+            id_user: args.userId,
+            id_performer_user: (args.performerId as number) || null,
+            prev_tokens_token_transaction: prevNum.toFixed(2),
+            diff_tokens_token_transaction: deltaNum.toFixed(2),
+            new_tokens_token_transaction: nextFixed.toFixed(2),
+            reason_token_transaction: args.reason ?? null,
+        } as any,
+        { transaction: t }
+    );
+
+    // 5) Payload consistente
+    return {
+        previousTokens: prevNum,
+        rechargeTokens: deltaNum,
+        totalRechargeTokens: nextFixed,
+        updatedAt: new Date().toISOString(),
+    };
+}
+
 const UserDao: IUserDao = {
-    /**
-     * findByEmail
-     *
-     * Description:
-     * Find a user by email address.
-     *
-     * Objective:
-     * - Query `graph_user` filtering by `email_user`.
-     *
-     * Parameters:
-     * @param email {string} - Target user's email.
-     *
-     * Returns:
-     * @returns {Promise<GraphUser | null>} - The user if found, otherwise null.
-     */
-    async findByEmail(email: string): Promise<GraphUser | null> {
-        logger.debug("[UserDao] Starting findByEmail", { email });
+    async findByEmail(email: string, opt?: Tx): Promise<GraphUser | null> {
+        logger.debug("[UserDao] findByEmail email=%s", email);
         try {
-            const user = await GraphUser.findOne({ where: { email_user: email } });
-            logger.info("[UserDao] Finished findByEmail", { email, found: Boolean(user) });
-            return user;
+            return await GraphUser.findOne({ where: { email_user: email }, ...(opt || {}) });
         } catch (err: any) {
-            logger.error("[UserDao] Error in findByEmail", {
-                email,
-                error: err?.message,
-                stack: err?.stack,
-            });
+            logger.error("[UserDao] Error in findByEmail email=%s err=%s", email, err?.message);
             throw err;
         }
     },
 
-    /**
-     * findById
-     *
-     * Description:
-     * Retrieve a user by primary key.
-     *
-     * Objective:
-     * - Query `graph_user` by `id_user`.
-     *
-     * Parameters:
-     * @param id {string} - User ID (primary key). Note: model uses UUID strings.
-     *
-     * Returns:
-     * @returns {Promise<GraphUser | null>} - The user if found, otherwise null.
-     */
-    async findById(id: number): Promise<GraphUser | null> {
-        logger.debug("[UserDao] Starting findById", { id });
+    async findById(id: number, opt?: Tx): Promise<GraphUser | null> {
+        logger.debug("[UserDao] findById id=%s", id);
+        if (!Number.isFinite(id) || id <= 0) {
+            const e: any = new Error("Invalid user id");
+            e.status = 400;
+            throw e;
+        }
         try {
-            const user = await GraphUser.findByPk(id);
-            logger.info("[UserDao] Finished findById", { id, found: Boolean(user) });
-            return user;
+            return await GraphUser.findByPk(id, { ...(opt || {}) });
         } catch (err: any) {
-            logger.error("[UserDao] Error in findById", {
-                id,
-                error: err?.message,
-                stack: err?.stack,
-            });
+            logger.error("[UserDao] Error in findById id=%s err=%s", id, err?.message);
             throw err;
         }
     },
 
-    /**
-     * createUser
-     *
-     * Description:
-     * Insert a new user into the `graph_user` table.
-     *
-     * Objective:
-     * - Persist email, hashed password, role, and initial tokens.
-     *
-     * Parameters:
-     * @param data {{
-     *   email_user: string;
-     *   password_user: string;
-     *   role_user?: "user" | "admin";
-     *   tokens_user?: string;
-     * }} - New user fields aligned with the model.
-     *
-     * Returns:
-     * @returns {Promise<GraphUser>} - The newly created user entity.
-     */
     async createUser(data: {
         email_user: string;
         password_user: string;
-        role_user?: "user" | "admin";
+        role_user?: GraphRoleUserEnum;
         tokens_user?: string;
     }): Promise<GraphUser> {
-        logger.debug("[UserDao] Starting createUser", { email: data.email_user });
+        logger.debug("[UserDao] createUser email=%s", data.email_user);
         try {
-            const created = await GraphUser.create(data as any);
-            logger.info("[UserDao] User created successfully", {
-                id: created.id_user,
-                email: created.email_user,
-                role: created.role_user,
-            });
-            return created;
+            // Normalizar tokens a 2 decimales si viniera numérico
+            if (data.tokens_user != null) {
+                const n = Number(data.tokens_user);
+                if (!Number.isFinite(n) || n < 0) {
+                    const e: any = new Error("tokens_user must be a finite number >= 0");
+                    e.status = 400;
+                    throw e;
+                }
+                data.tokens_user = n.toFixed(2);
+            }
+            return await GraphUser.create(data as any);
         } catch (err: any) {
-            logger.error("[UserDao] Error in createUser", {
-                email: data.email_user,
-                error: err?.message,
-                stack: err?.stack,
-            });
+            logger.error("[UserDao] Error in createUser email=%s err=%s", data.email_user, err?.message);
             throw err;
         }
     },
 
-    /**
-     * setNewBalance
-     *
-     * Description:
-     * Atomically update a user's token balance inside a transaction and record an audit entry.
-     *
-     * Objective:
-     * - Validate the new balance input.
-     * - Lock the target row for update.
-     * - Update the balance and persist an audit record to `graph_token_transaction`.
-     * - Return a summary with previous, new, and diff values.
-     *
-     * Parameters:
-     * @param userId {string | number} - Target user ID. Note: the model uses UUID strings; prefer `string`.
-     * @param newBalance {number} - New token balance to assign.
-     * @param performerId {string | null} - ID of the admin/user performing the operation (nullable).
-     * @param reason {string} - Reason for the operation (e.g., "admin recharge").
-     *
-     * Returns:
-     * @returns {Promise<{ previousTokens: number; newTokens: number; diff: number }>}
-     */
+    /** RECARGA (+delta). Reutiliza tx si viene; si no, crea una. */
+    async setNewBalance(userId, rechargeTokens, performerId, reason, opt?: Tx) {
+        const parsed = Number(rechargeTokens);
+        if (!Number.isFinite(parsed) || parsed <= 0) {
+            const e: any = new Error("rechargeTokens must be a positive number");
+            e.status = 400;
+            throw e;
+        }
+        const delta = Number(parsed.toFixed(2));
 
-    async setNewBalance(
-        userId: any, // kept as-is to match your current signature; prefer `string` UUID in your model
-        rechargeTokens: number,
-        performerId: number | '',
-        reason: string
-    ): Promise<SetNewBalanceResult> {
-            logger.debug("[UserDao] Starting setNewBalance (recharge mode)", {
+        const run = async (t: Transaction) => {
+            // leer prev con lock y construir next = prev + delta
+            const u = await GraphUser.findByPk(userId, { transaction: t, lock: t.LOCK.UPDATE });
+            if (!u) { const e: any = new Error("User not found"); e.status = 404; throw e; }
+            const prev = Number(u.tokens_user ?? 0);
+            const next = Number((prev + delta).toFixed(2));
+
+            return applyBalanceWithLock(t, {
                 userId,
-                rechargeTokens,
                 performerId,
-                hasReason: Boolean(reason),
+                reason: reason || ReasonTokenTransactionEnum.RECHARGE,
+                nextBalance: next,
+            });
+        };
+
+        return opt?.transaction ? run(opt.transaction) : sequelize.transaction(run);
+    },
+
+    /** CARGO / AJUSTE ABSOLUTO (fija saldo final). Úsalo para crear/ejecutar modelo. */
+    async setAbsoluteBalance(userId, newAbsoluteBalance, performerId, reason, opt?: Tx) {
+        const next = Number(newAbsoluteBalance);
+        if (!Number.isFinite(next) || next < 0) {
+            const e: any = new Error("newAbsoluteBalance must be a number >= 0");
+            e.status = 400;
+            throw e;
+        }
+        const run = (t: Transaction) =>
+            applyBalanceWithLock(t, {
+                userId,
+                performerId,
+                reason,
+                nextBalance: Number(next.toFixed(2)),
             });
 
-        logger.debug("[UserDao] Starting setNewBalance", {
-            userId,
-            rechargeTokens,
-            performerId,
-            hasReason: Boolean(reason),
-        });
-
-        return sequelize.transaction(async (t): Promise<SetNewBalanceResult> => {
-                // 1) Strong numeric validation
-                const parsed = Number(rechargeTokens);
-                if (!Number.isFinite(parsed) || parsed <= 0 ){
-                    logger.error("[UserDao] Invalid rechargeTokens (must be positive finite number)", { rechargeTokens });
-                    const err: any = new Error("rechargeTokens must be a positive number");
-                    err.status = 400;
-                    throw err;
-                }
-                const deltaStr  = parsed.toFixed(2);
-                const deltaNum  = Number(deltaStr );
-                logger.debug("[UserDao] Recharge validated", { deltaStr , deltaNum  });
-
-                // 2) Load and LOCK the target row
-                logger.debug("[UserDao] Loading user with row-level lock");
-                const user = await GraphUser.findByPk(userId, { transaction: t, lock: t.LOCK.UPDATE });
-                if (!user) {
-                    logger.warn("[UserDao] User not found", { userId });
-                    const err: any = new Error("User not found");
-                    err.status = 404;
-                    throw err;
-                }
-                const prevStr = String(user.tokens_user);
-                const previousNumTokens  = Number(prevStr);
-                logger.debug("[UserDao] Current balance loaded", { prevStr, previousNumTokens  });
-
-                // 3) Calcular nuevo saldo (total tras recarga)
-                const nextNum = Number((previousNumTokens + deltaNum).toFixed(2));
-                const nextStr = nextNum.toFixed(2);
-
-                // 4) UPDATE estático
-                logger.debug("[UserDao] Executing UPDATE tokens_user", { userId, setTo: nextStr });
-                const [affected, rows] = await GraphUser.update(
-                    { tokens_user: nextStr, updated_at_user: new Date() },
-                    { where: { id_user: userId }, transaction: t, returning: true }
-                );
-                logger.debug("[UserDao] UPDATE executed", { affected });
-                if (affected !== 1 || !rows?.[0]) {
-                    logger.error("[UserDao] Balance update failed (unexpected affected rows)", { userId, affected });
-                    const err: any = new Error("Balance update failed");
-                    err.status = 409;
-                    throw err;
-                }
-
-            // 5) Auditoría (guardamos el delta, pero no lo exponemos)
-            await GraphTokenTransaction.create(
-                {
-                    id_user: userId,
-                    id_performer_user: performerId ?? null,
-                    prev_tokens_token_transaction: previousNumTokens.toFixed(2),
-                    new_tokens_token_transaction: nextStr,
-                    diff_tokens_token_transaction: deltaStr,
-                    reason_token_transaction: reason,
-                } as any,
-                { transaction: t }
-            );
-
-            // 6) Payload con nombres CONSISTENTES con la firma
-            const payload: SetNewBalanceResult = {
-                previousTokens: previousNumTokens,
-                rechargeTokens: deltaNum,
-                totalRechargeTokens: nextNum,
-                updatedAt: new Date().toLocaleString(),
-            };
-            return payload;
-        });
+        return opt?.transaction ? run(opt.transaction) : sequelize.transaction(run);
     },
 };
 
