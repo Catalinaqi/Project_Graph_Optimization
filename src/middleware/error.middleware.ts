@@ -47,7 +47,7 @@ export function notFoundHandler(req: Request, res: Response): void {
         error: `Route ${req.method} ${req.originalUrl} not found: ${msg}`,
         method: req.method,
         path: req.originalUrl,
-        timestamp: new Date().toISOString(),
+        timestamp: new Date().toLocaleString(),
     });
 }
 
@@ -148,7 +148,7 @@ export function errorHandler(
         code,
         method: req.method,
         path: req.originalUrl,
-        timestamp: new Date().toISOString(),
+        timestamp: new Date().toLocaleString(), //toISOString
         ...(enviroment.nodeEnv !== "production" && {
             stack: (normalized as Error).stack,
         }),

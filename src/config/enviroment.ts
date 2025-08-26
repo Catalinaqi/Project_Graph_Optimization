@@ -71,6 +71,8 @@ const enviroment: Enviroment = {
     adminEmail: process.env.ADMIN_EMAIL || "admin@test.com",
     passwordAdmin: process.env.ADMIN_PASSWORD || "admin123",
     adminTokens: toNumber(process.env.ADMIN_TOKENS, 999),
+
+    graphAlphaKey: toNumber(process.env.GRAPH_ALPHA, 0.9),
 };
 
 // Log non-sensitive configuration to trace initialization
@@ -100,6 +102,9 @@ logger.info("[Env] Environment loaded", {
         email: enviroment.adminEmail,
         tokens: enviroment.adminTokens,
     },
+    graph: {
+        alphaKey: enviroment.graphAlphaKey,
+    }
 });
 
 export default enviroment;

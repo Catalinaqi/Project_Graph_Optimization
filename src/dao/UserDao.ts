@@ -58,7 +58,7 @@ async function applyBalanceWithLock(
         previousTokens: prevNum,
         rechargeTokens: deltaNum,
         totalRechargeTokens: nextFixed,
-        updatedAt: new Date().toISOString(),
+        updatedAt: new Date().toLocaleString(),
     };
 }
 

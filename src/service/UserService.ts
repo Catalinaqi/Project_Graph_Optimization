@@ -96,7 +96,7 @@ const UserService = {
                 reason
             );
 
-            const result = { ...out, updatedAt: new Date().toISOString() };
+            const result = { ...out, updatedAt: new Date().toLocaleString() };
 
             logger.info("[UserService] Finished process ... UserRepository.updateBalanceByEmail", {
                 targetEmail,

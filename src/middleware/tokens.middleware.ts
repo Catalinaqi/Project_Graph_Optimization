@@ -1,8 +1,11 @@
 import { Request, Response, NextFunction } from "express";
 import logger from "@/config/logger";
 import { GraphUser } from "@/model/GraphUser";
-import { getLatestVersion } from "@/repository/ModelRepository"; // named export
+import { ModelRepository } from "@/repository/ModelRepository"; // named export
 import type { GraphVersion } from "@/model/GraphVersion";
+
+
+const modelRepository = new ModelRepository();
 
 /** Formula oficial: 0.20 * nodos + 0.01 * arcos */
 function computeCostFromGraph(graph: Record<string, Record<string, number>>) {
@@ -85,7 +88,7 @@ export async function ensureBalanceForExecution(req: Request, res: Response, nex
         if (!userId) return res.status(401).json({ error: "Unauthorized" });
 
         const modelId = Number(req.params.id);
-        const version: GraphVersion | null = await getLatestVersion(modelId);
+        const version: GraphVersion | null = await modelRepository.getLatestVersion(modelId);
         if (!version) return res.status(404).json({ error: "Model not found" });
 
         const graph = version.graph_version as Record<string, Record<string, number>>;
