@@ -133,7 +133,7 @@ const UserDao: IUserDao = {
             return applyBalanceWithLock(t, {
                 userId,
                 performerId,
-                reason: reason || ReasonTokenTransactionEnum.RECHARGE,
+                reason: reason || ReasonTokenTransactionEnum.ADMIN_RECHARGE,
                 nextBalance: next,
             });
         };

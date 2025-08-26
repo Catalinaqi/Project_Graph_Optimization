@@ -61,6 +61,8 @@ const UserRepository: IUserRepository = {
             : UserDao.findById(id);
     },
 
+
+
     /**
      * create (Method)
      *
@@ -77,11 +79,30 @@ const UserRepository: IUserRepository = {
      */
     async create(email, passwordHash, initialTokens) {
         logger.debug("[UserRepository] create called with email=%s", email);
+        /*
         return UserDao.createUser({
             email_user: email,
             password_user: passwordHash,
             tokens_user: initialTokens.toFixed(2),
         });
+         */
+
+        // Paso 1: crear usuario
+        const created = await UserDao.createUser({
+            email_user: email,
+            password_user: passwordHash,
+            tokens_user: initialTokens.toFixed(2),
+        });
+
+        // Paso 2: registrar transacción inicial en ledger
+        await UserDao.setAbsoluteBalance(
+            created.id_user,
+            initialTokens,
+            created.id_user, // performer = el propio user
+            ReasonTokenTransactionEnum.SEED_RECHARGE
+        );
+
+        return created;
     },
 
     /**
@@ -122,23 +143,16 @@ const UserRepository: IUserRepository = {
             throw err;
         }
 
-        // 🟢 Step 4: Update the user’s balance using the DAO
-        //   - user.id_user → internal DB identifier
-        //   - rechargeTokens → new balance of tokens
-        //   - performerId → admin (or actor) who performed the recharge
-        //   - reason → optional reason for recharge (default: "admin recharge")
         logger.info("[UserRepository] Start execute ... UserDao.setNewBalance for user: %s, rechargeTokens=%s, performerId=%s, reason=%s",)
         const tx = await UserDao.setNewBalance(
             user.id_user,
             rechargeTokens,
             performerId,
-            reason || ReasonTokenTransactionEnum.RECHARGE
+            ReasonTokenTransactionEnum.ADMIN_RECHARGE
         );
         logger.info("[UserRepository] Finished execute ... UserDao.setNewBalance, updated successfully for user: %s", user.email_user);
 
         // 🟢 Step 5: Return updated information
-        //   - user email
-        //   - transaction details returned from DAO
         return { email: user.email_user, ...tx };
     },
 
@@ -151,6 +165,17 @@ const UserRepository: IUserRepository = {
         await UserDao.setAbsoluteBalance(args.userId, args.newBalance, args.performerId, args.reason, opt);
         return { newBalance: Number(args.newBalance) };
     }
+
+    /*
+    async updateTokens(userId: number, newTokens: number, opt?: Tx) {
+        return (GraphUser as any).update(
+            { tokens_user: newTokens },
+            { where: { id_user: userId }, transaction: opt?.transaction }
+        );
+    }
+    */
+
+
 
 };
 

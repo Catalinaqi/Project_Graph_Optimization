@@ -110,4 +110,8 @@ export interface IUserRepository {
         transaction?: Transaction;
     }): Promise<{ newBalance: number }>;
 
+    //updateTokens(userId: number, newBalance: number, opt?: Tx): Promise<void>;
+
+    //updateTokens(userId: number, newTokens: number, opt?: Tx): Promise<[affectedCount: number]>;
+
 }
