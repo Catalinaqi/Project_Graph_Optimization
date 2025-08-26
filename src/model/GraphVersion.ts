@@ -40,15 +40,54 @@ export class GraphVersion extends Model<
 
         GraphVersion.init(
             {
-                id_version: { type: DataTypes.INTEGER, autoIncrement: true, primaryKey: true, allowNull: false },
-                id_model: { type: DataTypes.INTEGER, allowNull: false },
-                version_number_version: { type: DataTypes.INTEGER, allowNull: false },
-                graph_version: { type: DataTypes.JSONB, allowNull: false },
-                node_count_version: { type: DataTypes.INTEGER, allowNull: false },
-                edge_count_version: { type: DataTypes.INTEGER, allowNull: false },
-                alpha_used_version: { type: DataTypes.DECIMAL(3, 2), allowNull: true },
-                id_creator_user: { type: DataTypes.INTEGER, allowNull: false },
-                created_at_version: { type: DataTypes.DATE, allowNull: false, defaultValue: DataTypes.NOW },
+                id_version: {
+                    type: DataTypes.INTEGER,
+                    autoIncrement: true,
+                    primaryKey: true,
+                    allowNull: false,
+                    field: "id_version",
+                },
+                id_model: {
+                    type: DataTypes.INTEGER,
+                    allowNull: false,
+                    field: "id_model",
+                },
+                version_number_version: {
+                    type: DataTypes.INTEGER,
+                    allowNull: false,
+                    field: "version_number_version",
+                },
+                graph_version: {
+                    type: DataTypes.JSONB,
+                    allowNull: false,
+                    field: "graph_version",
+                },
+                node_count_version: {
+                    type: DataTypes.INTEGER,
+                    allowNull: false,
+                    field: "node_count_version",
+                },
+                edge_count_version: {
+                    type: DataTypes.INTEGER,
+                    allowNull: false,
+                    field: "edge_count_version",
+                },
+                alpha_used_version: {
+                    type: DataTypes.DECIMAL(3, 2),
+                    allowNull: true,
+                    field: "alpha_used_version",
+                },
+                id_creator_user: {
+                    type: DataTypes.INTEGER,
+                    allowNull: false,
+                    field: "id_creator_user",
+                },
+                created_at_version: {
+                    type: DataTypes.DATE,
+                    allowNull: false,
+                    defaultValue: DataTypes.NOW,
+                    field: "created_at_version",
+                },
             },
             {
                 sequelize,
@@ -56,9 +95,19 @@ export class GraphVersion extends Model<
                 modelName: "GraphVersion",
                 timestamps: false,
                 indexes: [
-                    { unique: true, fields: ["id_model", "version_number_version"], name: "uq_gv_model_version" },
-                    { fields: ["id_model", "created_at_version"], name: "idx_gv_model_created_at" },
-                    { fields: ["node_count_version", "edge_count_version"], name: "idx_gv_counts" },
+                    {
+                        unique: true,
+                        fields: ["id_model", "version_number_version"],
+                        name: "uq_gv_model_version",
+                    },
+                    {
+                        fields: ["id_model", "created_at_version"],
+                        name: "idx_gv_model_created_at",
+                    },
+                    {
+                        fields: ["node_count_version", "edge_count_version"],
+                        name: "idx_gv_counts",
+                    },
                 ],
             }
         );
@@ -68,7 +117,16 @@ export class GraphVersion extends Model<
     static associate(models: any) {
         logger.debug("[GraphVersion] Registering associations...");
 
-        GraphVersion.belongsTo(models.GraphModel, { foreignKey: "id_model", as: "model", onDelete: "CASCADE" });
-        GraphVersion.belongsTo(models.GraphUser, { foreignKey: "id_creator_user", as: "creator", onDelete: "RESTRICT" });
+        GraphVersion.belongsTo(models.GraphModel, {
+            foreignKey: "id_model",
+            as: "model",
+            onDelete: "CASCADE",
+        });
+
+        GraphVersion.belongsTo(models.GraphUser, {
+            foreignKey: "id_creator_user",
+            as: "creator",
+            onDelete: "RESTRICT",
+        });
     }
 }

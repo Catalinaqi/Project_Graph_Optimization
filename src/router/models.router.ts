@@ -1,21 +1,21 @@
-/*
-import { Router } from "express";
-import logger from "@/config/logger";
-import { catchAsync } from "@/common/util/catchAsync";
-import {authenticationMiddleware} from "@/middleware/authentication.middleware";
-import {ensureBalanceForExecution, requirePositiveTokens} from "@/middleware/tokens.middleware";
-import { validationMiddleware } from "@/middleware/validate.middleware";
-import { GraphSchema, IdNumericParams } from "@/common/util/validation-schema";
-import {ModelController} from "@/controller/ModelController";
-*/
 import { Router } from "express";
 import ModelsController from "@/controller/ModelController";
 import {authenticationMiddleware} from "@/middleware/authentication.middleware"; // tu JWT
 import { validationMiddlewareV2 }  from "@/middleware/validate.middleware";
+import {SimulationController} from "@/controller/simulation.controller";
 //import { createModelSchema, executeSchema } from "@/common/util/validation-schema";
 import Joi from "joi";
+import {
+    moderationBodyReject, simulateBody, simulateParams, versionsParams, versionsQuery,
+    weightChangeCreateBody,
+    weightChangeCreateParams,
+    weightChangeListQuery,
+    weightChangeModerationParams
+} from '@/common/util/validation-schema';
+import WeightChangeController from '@/controller/WeightChangeController';
 
 const router = Router();
+const simulationController = new SimulationController();
 
 const graphSchema = Joi.object().pattern(
     Joi.string().min(1),
@@ -61,5 +61,57 @@ router.get(
     validationMiddlewareV2({ schema: { params: getOneParams } }),
     ModelsController.getOne
 );
+
+/***********************/
+
+/** Weight change: crear */
+router.post(
+    "/:id/weight-change",
+    authenticationMiddleware,
+    validationMiddlewareV2({ schema: { params: weightChangeCreateParams, body: weightChangeCreateBody } }),
+    WeightChangeController.create
+);
+
+/** Weight change: listar con filtros */
+router.get(
+    "/:id/weight-change",
+    authenticationMiddleware,
+    validationMiddlewareV2({ schema: { params: weightChangeCreateParams, query: weightChangeListQuery } }),
+    WeightChangeController.list
+);
+
+/** Approve */
+router.patch(
+    "/:id/weight-change/:requestId/approve",
+    authenticationMiddleware,
+    validationMiddlewareV2({ schema: weightChangeModerationParams, target: "params" }),
+    WeightChangeController.approve
+);
+
+/** Reject */
+router.patch(
+    "/:id/weight-change/:requestId/reject",
+    authenticationMiddleware,
+    validationMiddlewareV2({ schema: { params: weightChangeModerationParams, body: moderationBodyReject } }),
+    WeightChangeController.reject
+);
+
+/** Versions list */
+router.get(
+    "/:id/versions",
+    authenticationMiddleware,
+    validationMiddlewareV2({ schema: { params: versionsParams, query: versionsQuery } }),
+    WeightChangeController.listVersions
+);
+
+/** Simulation */
+
+router.post(
+    "/:id/simulate",
+    authenticationMiddleware,
+    validationMiddlewareV2({ schema: { params: simulateParams, body: simulateBody } }),
+    simulationController.simulate.bind(simulationController)
+);
+
 
 export default router;

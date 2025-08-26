@@ -118,8 +118,64 @@ export const GraphSchema = {
     stop: Joi.number().positive().greater(Joi.ref("start")).required(),
     step: Joi.number().positive().less(Joi.ref("stop")).required(),
   }),
-
-
-
-
 };
+
+  /*********************/
+
+  //import Joi from "joi";
+
+  export const weightChangeCreateParams = Joi.object({
+    id: Joi.number().integer().positive().required(),
+  });
+
+  export const weightChangeCreateBody = Joi.object({
+    from: Joi.string().min(1).required(),
+    to: Joi.string().min(1).required(),
+    weight: Joi.number().positive().required(),
+  });
+
+  export const weightChangeListQuery = Joi.object({
+    state: Joi.string().valid("pending", "approved", "rejected").optional(),
+    fromDate: Joi.date().iso().optional(),
+    toDate: Joi.date().iso().optional(),
+  });
+
+  export const weightChangeModerationParams = Joi.object({
+    id: Joi.number().integer().positive().required(),
+    requestId: Joi.number().integer().positive().required(),
+  });
+
+  export const moderationBodyReject = Joi.object({
+    reason: Joi.string().min(3).max(500).required(),
+  });
+
+  export const versionsParams = Joi.object({
+    id: Joi.number().integer().positive().required(),
+  });
+
+  export const versionsQuery = Joi.object({
+    fromDate: Joi.date().iso().optional(),
+    toDate: Joi.date().iso().optional(),
+    nodeCount: Joi.number().integer().min(0).optional(),
+    edgeCount: Joi.number().integer().min(0).optional(),
+  });
+
+  export const simulateParams = Joi.object({
+    id: Joi.number().integer().positive().required(),
+  });
+
+  export const simulateBody = Joi.object({
+    from: Joi.string().min(1).required(),
+    to: Joi.string().min(1).required(),
+    start: Joi.number().positive().required(),
+    stop: Joi.number().positive().greater(Joi.ref("start")).required(),
+    step: Joi.number().positive().max(Joi.ref("stop")).required(),
+    goal: Joi.string().min(1).required(),   // para ejecutar rutas en la simulación
+    origin: Joi.string().min(1).required(), // nodo de inicio para ejecutar rutas
+  });
+
+
+
+
+
+

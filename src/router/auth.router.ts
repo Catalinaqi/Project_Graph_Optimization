@@ -1,9 +1,6 @@
 import { Router } from 'express';
 import { AuthController } from '@/controller/auth.controller';
 import logger from '@/config/logger';
-import {catchAsync} from '@/common/util/catchAsync';
-import {UserSchema} from '@/common/util/validation-schema';
-//import {validationMiddleware} from '@/middleware/validate.middleware';
 
 /**
  * Authentication Router
