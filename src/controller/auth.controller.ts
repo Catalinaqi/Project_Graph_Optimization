@@ -1,5 +1,5 @@
 import type { Request, Response, NextFunction } from "express";
-import AuthService from "@/service/AuthService";
+import AuthService from "@/service/auth.service";
 import logger from "@/config/logger";
 import JwtUtils from "@/common/util/jwt.util";
 

@@ -3,7 +3,7 @@ import type { Request, Response, NextFunction } from "express";
 import { StatusCodes } from "http-status-codes";
 import logger from "@/config/logger";
 import enviroment from "@/config/enviroment";
-import { ErrorObj, getError } from "@/common/util/api.error.util";
+import { ErrorObj, getError } from "@/common/util/api-error";
 import { ErrorEnum } from "@/common/enums";
 
 /**

@@ -1,21 +1,21 @@
 // src/repository/simulation.repository.ts
-import { GraphSimulation } from "@/model/GraphSimulation";
-import { GraphSimulationResult } from "@/model/GraphSimulationResult";
-import { ISimulationRepository } from "./repository-interface/ISimulationRepository";
-import { SimulationDao } from "@/dao/SimulationDao";
+import { GraphSimulationModel } from "@/model/graph-simulation.model";
+import { GraphSimulationResultModel } from "@/model/graph-simulation-result.model";
+import { SimulationIrepository } from "@/repository/interfaces/simulation.irepository";
+import { SimulationDao } from "@/dao/simulation.dao";
 import logger from "@/config/logger";
-import { getError } from "@/common/util/api.error.util";
+import { getError } from "@/common/util/api-error";
 import { ErrorEnum } from "@/common/enums";
 import type { SimulationInput, SimulationResultInput } from "@/common/types";
 
-export class SimulationRepository implements ISimulationRepository {
+export class SimulationRepository implements SimulationIrepository {
     private dao: SimulationDao;
 
     constructor() {
         this.dao = new SimulationDao();
     }
 
-    async saveSimulation(data: SimulationInput): Promise<GraphSimulation> {
+    async saveSimulation(data: SimulationInput): Promise<GraphSimulationModel> {
         try {
             logger.debug(
                 "[SimulationRepository] saveSimulation model=%s version=%s user=%s from=%s to=%s",
@@ -30,7 +30,7 @@ export class SimulationRepository implements ISimulationRepository {
         }
     }
 
-    async saveSimulationResult(data: SimulationResultInput): Promise<GraphSimulationResult> {
+    async saveSimulationResult(data: SimulationResultInput): Promise<GraphSimulationResultModel> {
         try {
             logger.debug(
                 "[SimulationRepository] saveSimulationResult simId=%s weight=%s cost=%s",

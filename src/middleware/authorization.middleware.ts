@@ -1,5 +1,5 @@
 import type { Request, Response, NextFunction } from "express";
-import { getError } from "@/common/util/api.error.util";
+import { getError } from "@/common/util/api-error";
 import { ErrorEnum, GraphRoleUserEnum } from "@/common/enums";
 import logger from "@/config/logger";
 

@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import * as SimulationService from "@/service/simulation.service";
-import { getError } from "@/common/util/api.error.util";
+import { getError } from "@/common/util/api-error";
 import { ErrorEnum } from "@/common/enums";
 import logger from "@/config/logger";
 

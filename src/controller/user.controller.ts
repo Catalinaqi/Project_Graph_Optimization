@@ -1,5 +1,5 @@
 import type { Request, Response, NextFunction } from "express";
-import UserService from "@/service/UserService";
+import UserService from "@/service/user.service";
 import logger from "@/config/logger";
 import {StatusCodes} from 'http-status-codes';
 

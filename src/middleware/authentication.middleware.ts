@@ -1,9 +1,9 @@
 import { NextFunction, Request, Response } from "express";
 import logger from "@/config/logger";
-import { getError } from "@/common/util/api.error.util";
+import { getError } from "@/common/util/api-error";
 import { ErrorEnum } from "@/common/enums";
 import { UserPayloadTypeSafe } from "@/common/types";
-import { SecurityFactory } from "@/common/security/security.factory";
+import { SecurityFactory } from "@/common/security/security-factory";
 
 // Create the JWT strategy once via the factory.
 // This approach allows switching algorithms (e.g., HS256 ↔ RS256) without changing the middleware.

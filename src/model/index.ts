@@ -7,49 +7,49 @@
  *
  * Usage:
  * - const models = initModels(sequelize);
- * - models.GraphUser, models.GraphModel, ...
+ * - models.GraphUserModel, models.GraphModel, ...
  */
 
 import { Sequelize } from "sequelize";
-import { GraphUser } from "./GraphUser";
-import { GraphModel } from "./GraphModel";
-import { GraphVersion } from "./GraphVersion";
-import { GraphWeightChangeRequest } from "./GraphWeightChangeRequest";
-import { GraphSimulation } from "./GraphSimulation";
-import { GraphSimulationResult } from "./GraphSimulationResult";
-import { GraphTokenTransaction } from "./GraphTokenTransaction";
+import { GraphUserModel } from "./graph-user.model";
+import { GraphModel } from "./graph.model";
+import { GraphVersionModel } from "./graph-version.model";
+import { GraphWeightChangeRequestModel } from "./graph-weight-change-request.model";
+import { GraphSimulationModel } from "./graph-simulation.model";
+import { GraphSimulationResultModel } from "./graph-simulation-result.model";
+import { GraphTokenTransactionModel } from "./graph-token-transaction.model";
 import logger from "@/config/logger";
 
 export function initModels(sequelize: Sequelize) {
     logger.debug("[Models] Bootstrapping...");
 
     // 1) Initialize
-    GraphUser.initModel(sequelize);
+    GraphUserModel.initModel(sequelize);
     GraphModel.initModel(sequelize);
-    GraphVersion.initModel(sequelize);
-    GraphWeightChangeRequest.initModel(sequelize);
-    GraphSimulation.initModel(sequelize);
-    GraphSimulationResult.initModel(sequelize);
-    GraphTokenTransaction.initModel(sequelize);
+    GraphVersionModel.initModel(sequelize);
+    GraphWeightChangeRequestModel.initModel(sequelize);
+    GraphSimulationModel.initModel(sequelize);
+    GraphSimulationResultModel.initModel(sequelize);
+    GraphTokenTransactionModel.initModel(sequelize);
 
     const models = {
-        GraphUser,
+        GraphUser: GraphUserModel,
         GraphModel,
-        GraphVersion,
-        GraphWeightChangeRequest,
-        GraphSimulation,
-        GraphSimulationResult,
-        GraphTokenTransaction,
+        GraphVersion: GraphVersionModel,
+        GraphWeightChangeRequest: GraphWeightChangeRequestModel,
+        GraphSimulation: GraphSimulationModel,
+        GraphSimulationResult: GraphSimulationResultModel,
+        GraphTokenTransaction: GraphTokenTransactionModel,
     };
 
     // 2) Associations
-    GraphUser.associate(models);
+    GraphUserModel.associate(models);
     GraphModel.associate(models);
-    GraphVersion.associate(models);
-    GraphWeightChangeRequest.associate(models);
-    GraphSimulation.associate(models);
-    GraphSimulationResult.associate(models);
-    GraphTokenTransaction.associate(models);
+    GraphVersionModel.associate(models);
+    GraphWeightChangeRequestModel.associate(models);
+    GraphSimulationModel.associate(models);
+    GraphSimulationResultModel.associate(models);
+    GraphTokenTransactionModel.associate(models);
 
     logger.debug("[Models] Ready.");
     return models;
