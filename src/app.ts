@@ -5,7 +5,6 @@ import logger from "@/config/logger";
 
 import { setupSwagger } from "@/config/swagger";
 
-
 /**
  * Main Express Application
  *
@@ -23,7 +22,6 @@ const app = express();
  */
 app.use(express.json());
 
-
 /**
  * Middleware: Request Logger
  *
@@ -35,11 +33,11 @@ app.use(express.json());
  * @param req.originalUrl {string} - Original URL of the request.
  */
 app.use((req, _res, next) => {
-    logger.info('[App] Incoming request', {
-        method: req.method,
-        url: req.originalUrl,
-    });
-    next();
+  logger.info("[App] Incoming request", {
+    method: req.method,
+    url: req.originalUrl,
+  });
+  next();
 });
 
 /**
@@ -50,7 +48,6 @@ app.use((req, _res, next) => {
  */
 app.use("/api", api);
 
-
 /**
  * Middleware: Global Error Handler
  *
@@ -60,9 +57,14 @@ app.use("/api", api);
  */
 app.use(errorHandler);
 
+/**
+ * Swagger Setup
+ *
+ * Description:
+ * Sets up Swagger UI for API documentation and testing.
+ */
 
-setupSwagger(app); // habilita swagger en /api/docs
-
+setupSwagger(app);
 
 /**
  * Application Initialization Log
@@ -70,6 +72,8 @@ setupSwagger(app); // habilita swagger en /api/docs
  * Description:
  * Logs when the Express application is fully initialized and ready.
  */
-logger.info("[App] Express application initialized and ready to receive requests.");
+logger.info(
+  "[App] Express application initialized and ready to receive requests.",
+);
 
 export default app;

@@ -3,11 +3,6 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "migrate": "npx sequelize-cli db:migrate",
-    "migrate:undo": "npx sequelize-cli db:migrate:undo",
-    "db:seed-admin": "npm run build && npx sequelize-cli db:seed --seed dist/database/seeders/20250818-seed-admin-user.js",
-    "db:seed:all": "npm run build && npx sequelize-cli db:seed:all",
-    "db:seed:undo:all": "npm run build && npx sequelize-cli db:seed:undo:all",
     "lint": "eslint \"src/**/*.{ts,tsx}\"",
     "lint:fix": "eslint \"src/**/*.{ts,tsx}\" --fix",
     "format": "prettier --write .",
@@ -17,8 +12,10 @@
     "keys:force": "ts-node -r tsconfig-paths/register -r dotenv/config src/common/util/generate-keys.ts --force",
     "dev": "npm run keys && ts-node-dev -r tsconfig-paths/register --respawn --transpile-only src/server.ts",
     "build": "tsc && tsc-alias",
-    "prestart": "node dist/common/util/generateKeys.js",
-    "start": "node dist/server.js"
+    "prestart": "node dist/common/util/generate-keys.js",
+    "start": "node dist/server.js",
+    "start:dev": "dotenv -e .env.development -- npm run dev",
+    "start:prod": "dotenv -e .env.production -- npm run build && npm start"
   },
   "dependencies": {
     "dotenv": "^17.2.1",
@@ -32,7 +29,15 @@
     "swagger-jsdoc": "^6.2.8",
     "swagger-ui-express": "^5.0.1",
     "uuid": "^11.1.0",
-    "zod": "^4.0.17"
+    "winston": "^3.17.0",
+    "express-list-endpoints": "^7.1.1",
+    "bcrypt": "^6.0.0",
+    "yamljs": "^0.3.0",
+    "joi": "^18.0.0",
+    "ts-node": "^10.9.2",
+    "ts-node-dev": "^2.0.0",
+    "tsc-alias": "^1.8.16",
+    "tsconfig-paths": "^4.2.0"
   },
   "devDependencies": {
     "@types/bcrypt": "^6.0.0",
@@ -44,24 +49,14 @@
     "@types/node-dijkstra": "^2.5.6",
     "@types/swagger-ui-express": "^4.1.8",
     "@types/yamljs": "^0.2.34",
-    "@typescript-eslint/eslint-plugin": "^8.39.1",
-    "@typescript-eslint/parser": "^8.39.1",
-    "bcrypt": "^6.0.0",
+    "@typescript-eslint/eslint-plugin": "^8.41.0",
+    "@typescript-eslint/parser": "^8.41.0",
     "cors": "^2.8.5",
-    "eslint": "^8.57.0",
+    "eslint": "^8.57.1",
     "eslint-plugin-import": "^2.29.1",
-    "express-list-endpoints": "^7.1.1",
     "jest": "^30.0.5",
-    "joi": "^18.0.0",
     "prettier": "^3.6.2",
-    "sequelize-cli": "^6.6.3",
-    "supertest": "^7.1.4",
     "ts-jest": "^29.4.1",
-    "ts-node": "^10.9.2",
-    "ts-node-dev": "^2.0.0",
-    "tsc-alias": "^1.8.16",
-    "tsconfig-paths": "^4.2.0",
-    "winston": "^3.17.0",
-    "yamljs": "^0.3.0"
+    "dotenv-cli": "^7.4.2"
   }
 }

@@ -1,7 +1,7 @@
 export class ExecuteModelCommand {
-    constructor(private action: () => Promise<any>) {}
+  constructor(private action: () => Promise<any>) {}
 
-    async execute() {
-        return this.action();
-    }
+  async execute() {
+    return this.action();
+  }
 }

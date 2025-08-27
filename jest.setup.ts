@@ -1,4 +1,4 @@
-import logger  from "@/config/logger";
+import logger from "@/config/logger";
 import winston from "winston";
 
 // Silence console output during tests

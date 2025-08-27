@@ -5,6 +5,7 @@ This file explains the purpose of each section inside `package.json`.
 ---
 
 ## Metadata
+
 - **name**: Project name
 - **version**: Project version
 - **main**: Entry point for Node.js runtime
@@ -12,6 +13,7 @@ This file explains the purpose of each section inside `package.json`.
 ---
 
 ## Scripts
+
 Automation tasks used during development and deployment:
 
 - **migrate** → Run database migrations
@@ -34,6 +36,7 @@ Automation tasks used during development and deployment:
 ---
 
 ## Dependencies
+
 Libraries required for the application to run:
 
 - **dotenv** → Load environment variables
@@ -50,6 +53,7 @@ Libraries required for the application to run:
 ---
 
 ## DevDependencies
+
 Libraries required only during development and testing:
 
 - **@types/...** → TypeScript type definitions

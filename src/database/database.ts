@@ -62,21 +62,21 @@ export default class Database {
         dialect: "postgres",
         logging: (msg) => logger.debug(`[Sequelize] ${msg}`),
         dialectOptions:
-            nodeEnv === "production" && process.env.PGSSL === "true"
-                ? {
-                  ssl: {
-                    require: true,
-                    rejectUnauthorized: false,
-                  },
-                }
-                : undefined,
+          nodeEnv === "production" && process.env.PGSSL === "true"
+            ? {
+                ssl: {
+                  require: true,
+                  rejectUnauthorized: false,
+                },
+              }
+            : undefined,
       };
 
       Database.instance = new Sequelize(
-          postgresDB,
-          postgresUser,
-          postgresPassword,
-          options,
+        postgresDB,
+        postgresUser,
+        postgresPassword,
+        options,
       );
 
       logger.info("[Database] Sequelize instance created successfully");

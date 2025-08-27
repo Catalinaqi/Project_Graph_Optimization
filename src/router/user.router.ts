@@ -1,9 +1,9 @@
-import {Router} from 'express';
-import {UserController} from '@/controller/user.controller';
-import {authenticationMiddleware} from '@/middleware/authentication.middleware';
-import {AuthorizationMiddleware} from '@/middleware/authorization.middleware';
+import { Router } from "express";
+import { UserController } from "@/controller/user.controller";
+import { authenticationMiddleware } from "@/middleware/authentication.middleware";
+import { AuthorizationMiddleware } from "@/middleware/authorization.middleware";
 import logger from "@/config/logger";
-import {GraphRoleUserEnum} from '@/common/enums';
+import { GraphRoleUserEnum } from "@/common/enums";
 
 /**
  * User Router
@@ -31,12 +31,10 @@ const router = Router();
  * Returns:
  * JSON containing the authenticated user’s information.
  */
-router.get('/me',
-    authenticationMiddleware,
-    (req, res, next) => {
-        logger.info('[User Router] Handling request: GET /users/me');
-        UserController.me(req, res, next);
-        logger.info('[User Router] Finished handling request: GET /users/me');
+router.get("/me", authenticationMiddleware, (req, res, next) => {
+  logger.info("[User Router] Handling request: GET /users/me");
+  UserController.me(req, res, next);
+  logger.info("[User Router] Finished handling request: GET /users/me");
 });
 
 /**
@@ -59,14 +57,14 @@ router.get('/me',
  * JSON containing the result of the recharge operation.
  */
 router.post(
-    '/recharge',
-    authenticationMiddleware,
-    AuthorizationMiddleware.requireRole(GraphRoleUserEnum.ADMIN),
-    (req, res, next) => {
-        logger.info('[UserRouter] Start handling request: POST /users/recharge');
-        UserController.recharge(req, res, next);
-        logger.info('[UserRouter] Finished handling request: POST /users/recharge');
-    }
+  "/recharge",
+  authenticationMiddleware,
+  AuthorizationMiddleware.requireRole(GraphRoleUserEnum.ADMIN),
+  (req, res, next) => {
+    logger.info("[UserRouter] Start handling request: POST /users/recharge");
+    UserController.recharge(req, res, next);
+    logger.info("[UserRouter] Finished handling request: POST /users/recharge");
+  },
 );
 
 export default router;

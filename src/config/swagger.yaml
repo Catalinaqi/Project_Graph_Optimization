@@ -160,7 +160,11 @@ paths:
               type: object
               required: [name, graph]
               properties:
-                name: { type: string, example: "Rete logistica Italia (Centro-Nord)" }
+                name:
+                  {
+                    type: string,
+                    example: "Rete logistica Italia (Centro-Nord)",
+                  }
                 graph:
                   type: object
                   example:
@@ -187,7 +191,8 @@ paths:
           description: Insufficient tokens
           content:
             application/json:
-              example: { error: "Insufficient tokens", required: 2.78, available: 1.5 }
+              example:
+                { error: "Insufficient tokens", required: 2.78, available: 1.5 }
         "422":
           description: Validation failed
           content:
@@ -357,7 +362,8 @@ paths:
             schema:
               type: object
               properties:
-                reason: { type: string, example: "Peso non coerente con la realtà" }
+                reason:
+                  { type: string, example: "Peso non coerente con la realtà" }
       responses:
         "200":
           description: Request rejected
@@ -435,16 +441,16 @@ paths:
                   simulationId: 14
                   results:
                     - weight: 1
-                      path: [ "A", "C" ]
+                      path: ["A", "C"]
                       cost: 2.5
                       execTime: 0
                     - weight: 2
-                      path: [ "A", "C" ]
+                      path: ["A", "C"]
                       cost: 2.5
                       execTime: 0
                   best:
                     weight: 1
-                    path: [ "A", "C" ]
+                    path: ["A", "C"]
                     cost: 2.5
                     execTime: 0
         "400":

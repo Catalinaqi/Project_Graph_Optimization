@@ -10,18 +10,15 @@
  * - `ADMIN` → Administrator, can recharge tokens and approve/revoke requests.
  */
 export enum GraphRoleUserEnum {
-    USER = "user",
-    ADMIN = "admin",
+  USER = "user",
+  ADMIN = "admin",
 }
 
 export enum ReasonTokenTransactionEnum {
-    ADMIN_RECHARGE = "admin_recharge",
-    MODEL_CREATION_RECHARGE = "model_creation_recharge",
-    SEED_RECHARGE = "creation_user_recharge",
+  ADMIN_RECHARGE = "admin_recharge",
+  MODEL_CREATION_RECHARGE = "model_creation_recharge",
+  SEED_RECHARGE = "creation_user_recharge",
 }
-
-
-
 
 /**
  * Enum: GraphRequestStatusEnum
@@ -36,9 +33,9 @@ export enum ReasonTokenTransactionEnum {
  * - `REJECTED` → Request has been rejected (optional: rejection reason can be provided).
  */
 export enum GraphRequestStatusEnum {
-    PENDING = "pending",
-    APPROVED = "approved",
-    REJECTED = "rejected",
+  PENDING = "pending",
+  APPROVED = "approved",
+  REJECTED = "rejected",
 }
 
 /**
@@ -76,32 +73,32 @@ export enum GraphRequestStatusEnum {
  *   - `BEARER_TOKEN_MALFORMED` → Malformed Bearer token (400).
  */
 export enum ErrorEnum {
-    // Generic Errors
-    GENERIC_ERROR = "GENERIC_ERROR",
-    NOT_FOUND_ERROR = "NOT_FOUND_ERROR",
-    NOT_FOUND_ROUTE_ERROR = "NOT_FOUND_ROUTE_ERROR",
-    FORBIDDEN_ERROR = "FORBIDDEN_ERROR",
-    UNAUTHORIZED_ERROR = "UNAUTHORIZED_ERROR",
-    BAD_REQUEST_ERROR = "BAD_REQUEST_ERROR",
-    CONFLICT_ERROR = "CONFLICT_ERROR",
-    INVALID_JWT_FORMAT = "INVALID_JWT_FORMAT",
+  // Generic Errors
+  GENERIC_ERROR = "GENERIC_ERROR",
+  NOT_FOUND_ERROR = "NOT_FOUND_ERROR",
+  NOT_FOUND_ROUTE_ERROR = "NOT_FOUND_ROUTE_ERROR",
+  FORBIDDEN_ERROR = "FORBIDDEN_ERROR",
+  UNAUTHORIZED_ERROR = "UNAUTHORIZED_ERROR",
+  BAD_REQUEST_ERROR = "BAD_REQUEST_ERROR",
+  CONFLICT_ERROR = "CONFLICT_ERROR",
+  INVALID_JWT_FORMAT = "INVALID_JWT_FORMAT",
 
-    // User/Authentication Errors
-    EMAIL_ALREADY_REGISTERED_OR_INVALID = "EMAIL_ALREADY_REGISTERED_OR_INVALID",
-    VALIDATION_FAILED = "VALIDATION_FAILED",
-    INVALID_CREDENTIALS = "INVALID_CREDENTIALS",
-    NO_AUTHORIZED = "NO_AUTHORIZED",
-    INSUFFICIENT_PERMISSIONS = "INSUFFICIENT_PERMISSIONS",
-    USER_NOT_FOUND = "USER_NOT_FOUND",
+  // User/Authentication Errors
+  EMAIL_ALREADY_REGISTERED_OR_INVALID = "EMAIL_ALREADY_REGISTERED_OR_INVALID",
+  VALIDATION_FAILED = "VALIDATION_FAILED",
+  INVALID_CREDENTIALS = "INVALID_CREDENTIALS",
+  NO_AUTHORIZED = "NO_AUTHORIZED",
+  INSUFFICIENT_PERMISSIONS = "INSUFFICIENT_PERMISSIONS",
+  USER_NOT_FOUND = "USER_NOT_FOUND",
 
-    // JWT / Server Errors
-    SERVER_ERROR = "SERVER_ERROR",
-    INVALID_JWT_SIGNATURE = "INVALID_JWT_SIGNATURE",
-    JWT_EXPIRED = "JWT_EXPIRED",
-    JWT_NOT_ACTIVE = "JWT_NOT_ACTIVE",
-    MISSING_AUTH_HEADER = "MISSING_AUTH_HEADER",
-    BEARER_TOKEN_MALFORMED = "BEARER_TOKEN_MALFORMED",
+  // JWT / Server Errors
+  SERVER_ERROR = "SERVER_ERROR",
+  INVALID_JWT_SIGNATURE = "INVALID_JWT_SIGNATURE",
+  JWT_EXPIRED = "JWT_EXPIRED",
+  JWT_NOT_ACTIVE = "JWT_NOT_ACTIVE",
+  MISSING_AUTH_HEADER = "MISSING_AUTH_HEADER",
+  BEARER_TOKEN_MALFORMED = "BEARER_TOKEN_MALFORMED",
 
-    // DATABASE Errors
-    DB_ERROR = "DB_ERROR",
+  // DATABASE Errors
+  DB_ERROR = "DB_ERROR",
 }
