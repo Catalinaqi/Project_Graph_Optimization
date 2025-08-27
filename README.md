@@ -1,6 +1,3 @@
----
-
-````markdown
 # Graph Optimization Backend
 
 ## Introduction
@@ -317,5 +314,3 @@ The system follows a **layered architecture** with strict separation of concerns
 * Execution of shortest path with Dijkstra
 * Weight change request lifecycle
 * Simulation workflow
-
-
