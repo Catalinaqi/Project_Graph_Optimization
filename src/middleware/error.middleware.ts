@@ -1,4 +1,3 @@
-// src/middleware/error.middleware.ts
 import type { Request, Response, NextFunction } from "express";
 import { StatusCodes } from "http-status-codes";
 import logger from "@/config/logger";
@@ -22,33 +21,33 @@ import { ErrorEnum } from "@/common/enums";
  * @returns {void} - Sends a 404 JSON response.
  */
 export function notFoundHandler(req: Request, res: Response): void {
-    const errObj =
-        getError(ErrorEnum.NOT_FOUND_ROUTE_ERROR) ??
-        new ErrorObj(
-            StatusCodes.NOT_FOUND,
-            "Route not found.",
-            ErrorEnum.NOT_FOUND_ROUTE_ERROR
-        );
+  const errObj =
+    getError(ErrorEnum.NOT_FOUND_ROUTE_ERROR) ??
+    new ErrorObj(
+      StatusCodes.NOT_FOUND,
+      "Route not found.",
+      ErrorEnum.NOT_FOUND_ROUTE_ERROR,
+    );
 
-    const { status, msg } = errObj.toJSON();
+  const { status, msg } = errObj.toJSON();
 
-    logger.warn({
-        message: "[NotFoundHandler] Route not found",
-        meta: {
-            method: req.method,
-            path: req.originalUrl,
-            status,
-            msg,
-        },
-    });
+  logger.warn({
+    message: "[NotFoundHandler] Route not found",
+    meta: {
+      method: req.method,
+      path: req.originalUrl,
+      status,
+      msg,
+    },
+  });
 
-    res.status(status).json({
-        success: false,
-        error: `Route ${req.method} ${req.originalUrl} not found: ${msg}`,
-        method: req.method,
-        path: req.originalUrl,
-        timestamp: new Date().toLocaleString(),
-    });
+  res.status(status).json({
+    success: false,
+    error: `Route ${req.method} ${req.originalUrl} not found: ${msg}`,
+    method: req.method,
+    path: req.originalUrl,
+    timestamp: new Date().toLocaleString(),
+  });
 }
 
 /**
@@ -70,24 +69,24 @@ export function notFoundHandler(req: Request, res: Response): void {
  * @returns {void}
  */
 export function errorConverter(
-    err: unknown,
-    _req: Request,
-    _res: Response,
-    next: NextFunction
+  err: unknown,
+  _req: Request,
+  _res: Response,
+  next: NextFunction,
 ): void {
-    if (err instanceof ErrorObj) {
-        return next(err);
-    }
-    if (err instanceof Error) {
-        return next(
-            new ErrorObj(
-                StatusCodes.INTERNAL_SERVER_ERROR,
-                err.message || "Unexpected error",
-                ErrorEnum.GENERIC_ERROR
-            )
-        );
-    }
-    return next(getError(ErrorEnum.GENERIC_ERROR));
+  if (err instanceof ErrorObj) {
+    return next(err);
+  }
+  if (err instanceof Error) {
+    return next(
+      new ErrorObj(
+        StatusCodes.INTERNAL_SERVER_ERROR,
+        err.message || "Unexpected error",
+        ErrorEnum.GENERIC_ERROR,
+      ),
+    );
+  }
+  return next(getError(ErrorEnum.GENERIC_ERROR));
 }
 
 /**
@@ -110,47 +109,47 @@ export function errorConverter(
  * @returns {Response} - Sends a JSON error response with metadata.
  */
 export function errorHandler(
-    err: ErrorObj | Error,
-    req: Request,
-    res: Response,
-    _next: NextFunction
+  err: ErrorObj | Error,
+  req: Request,
+  res: Response,
+  _next: NextFunction,
 ): Response {
-    const normalized =
-        err instanceof ErrorObj
-            ? err
-            : new ErrorObj(
-                StatusCodes.INTERNAL_SERVER_ERROR,
-                (err as Error)?.message || "Unexpected error",
-                ErrorEnum.GENERIC_ERROR
-            );
+  const normalized =
+    err instanceof ErrorObj
+      ? err
+      : new ErrorObj(
+          StatusCodes.INTERNAL_SERVER_ERROR,
+          (err as Error)?.message || "Unexpected error",
+          ErrorEnum.GENERIC_ERROR,
+        );
 
-    const { status, msg } = normalized.toJSON();
-    const code = (normalized as any)?.type ?? ErrorEnum.GENERIC_ERROR;
+  const { status, msg } = normalized.toJSON();
+  const code = (normalized as any)?.type ?? ErrorEnum.GENERIC_ERROR;
 
-    logger.error({
-        message: "[ErrorHandler] Exception intercepted",
-        meta: {
-            code,
-            status,
-            msg,
-            method: req.method,
-            path: req.originalUrl,
-            ...(enviroment.nodeEnv !== "production" && {
-                stack: (normalized as Error).stack,
-            }),
-            rid: (req as any).rid, // request id if managed upstream
-        },
-    });
+  logger.error({
+    message: "[ErrorHandler] Exception intercepted",
+    meta: {
+      code,
+      status,
+      msg,
+      method: req.method,
+      path: req.originalUrl,
+      ...(enviroment.nodeEnv !== "production" && {
+        stack: (normalized as Error).stack,
+      }),
+      rid: (req as any).rid, // request id if managed upstream
+    },
+  });
 
-    return res.status(status).json({
-        success: false,
-        error: msg,
-        code,
-        method: req.method,
-        path: req.originalUrl,
-        timestamp: new Date().toLocaleString(), //toISOString
-        ...(enviroment.nodeEnv !== "production" && {
-            stack: (normalized as Error).stack,
-        }),
-    });
+  return res.status(status).json({
+    success: false,
+    error: msg,
+    code,
+    method: req.method,
+    path: req.originalUrl,
+    timestamp: new Date().toLocaleString(), //toISOString
+    ...(enviroment.nodeEnv !== "production" && {
+      stack: (normalized as Error).stack,
+    }),
+  });
 }

@@ -5,8 +5,6 @@ import { ErrorEnum } from "@/common/enums";
 import { UserPayloadTypeSafe } from "@/common/types";
 import { SecurityFactory } from "@/common/security/security-factory";
 
-// Create the JWT strategy once via the factory.
-// This approach allows switching algorithms (e.g., HS256 ↔ RS256) without changing the middleware.
 const jwt = SecurityFactory.makeJwtStrategy();
 
 /**
@@ -31,52 +29,63 @@ const jwt = SecurityFactory.makeJwtStrategy();
  * Returns:
  * @returns {void} - Calls `next()` on success or forwards an error to the error handler.
  */
-export function authenticationMiddleware(req: Request, _res: Response, next: NextFunction): void {
-    // Create or retrieve a request identifier for traceability
-    const rid: string =
-        (req.headers["x-request-id"] as string) || Math.random().toString(36).slice(2);
+export function authenticationMiddleware(
+  req: Request,
+  _res: Response,
+  next: NextFunction,
+): void {
+  // Create or retrieve a request identifier for traceability
+  const rid: string =
+    (req.headers["x-request-id"] as string) ||
+    Math.random().toString(36).slice(2);
 
-    try {
-        logger.debug("[Auth] Starting authentication", { rid });
+  try {
+    logger.debug("[Auth] Starting authentication", { rid });
 
-        // Read Authorization header (case-insensitive, trims extra spaces)
-        const rawHeader = (req.get("authorization") ?? req.headers.authorization ?? "").trim();
-        if (!rawHeader) {
-            logger.warn("[Auth] Missing Authorization header", { rid });
-            throw getError(ErrorEnum.MISSING_AUTH_HEADER);
-        }
-
-        // Expect format: "Bearer <token>"
-        const [scheme, token] = rawHeader.split(/\s+/);
-        if (!/^Bearer$/i.test(scheme) || !token) {
-            logger.warn("[Auth] Malformed Authorization header", { rid, value: rawHeader });
-            throw getError(ErrorEnum.BEARER_TOKEN_MALFORMED);
-        }
-
-        // Verify token using the configured JWT strategy (exceptions are thrown on failure)
-        logger.debug("[Auth] Verifying JWT token", { rid });
-        const payload = jwt.verify(token) as UserPayloadTypeSafe;
-
-        // Attach payload to request for downstream usage
-        (req as any).user = payload;
-
-        logger.info("[Auth] Authentication successful", {
-            rid,
-            userId: payload?.id,
-            role: (payload as any)?.role,
-        });
-
-        next();
-    } catch (err: unknown) {
-        const message = err instanceof Error ? err.message : String(err);
-        logger.error("[Auth] Authentication failed", {
-            rid,
-            message,
-            stack: err instanceof Error ? err.stack : undefined,
-        });
-
-        // Always map to a 401 Unauthorized for security unless you need finer-grained errors
-        const mapped = getError(ErrorEnum.UNAUTHORIZED_ERROR);
-        next(mapped);
+    // Read Authorization header (case-insensitive, trims extra spaces)
+    const rawHeader = (
+      req.get("authorization") ??
+      req.headers.authorization ??
+      ""
+    ).trim();
+    if (!rawHeader) {
+      logger.warn("[Auth] Missing Authorization header", { rid });
+      throw getError(ErrorEnum.MISSING_AUTH_HEADER);
     }
+
+    // Expect format: "Bearer <token>"
+    const [scheme, token] = rawHeader.split(/\s+/);
+    if (!/^Bearer$/i.test(scheme) || !token) {
+      logger.warn("[Auth] Malformed Authorization header", {
+        rid,
+        value: rawHeader,
+      });
+      throw getError(ErrorEnum.BEARER_TOKEN_MALFORMED);
+    }
+
+    // Verify token using the configured JWT strategy (exceptions are thrown on failure)
+    logger.debug("[Auth] Verifying JWT token", { rid });
+    const payload = jwt.verify(token) as UserPayloadTypeSafe;
+
+    // Attach payload to request for downstream usage
+    (req as any).user = payload;
+
+    logger.info("[Auth] Authentication successful", {
+      rid,
+      userId: payload?.id,
+      role: (payload as any)?.role,
+    });
+
+    next();
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : String(err);
+    logger.error("[Auth] Authentication failed", {
+      rid,
+      message,
+      stack: err instanceof Error ? err.stack : undefined,
+    });
+
+    const mapped = getError(ErrorEnum.UNAUTHORIZED_ERROR);
+    next(mapped);
+  }
 }

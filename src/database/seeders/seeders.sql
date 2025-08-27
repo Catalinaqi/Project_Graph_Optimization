@@ -1,12 +1,12 @@
 -- select * from graph_user gu ;
 -- select * from graph_token_transaction gtt ;
 
--- Ajusta los valores entre comillas si quieres otros
+
 DO $$
 DECLARE _hash TEXT;
 BEGIN
-  -- bcrypt con 12 rounds (requiere extensión pgcrypto si usas crypt/salt)
-  -- Si no tienes pgcrypto para crypt(), genera el hash en Node y pega el string aquí.
+    -- bcrypt with 12 rounds (requires pgcrypto extension if using crypt/salt)
+    -- If you don't have pgcrypto for crypt(), generate the hash in Node and paste the string here.
   SELECT crypt('admin123', gen_salt('bf', 12)) INTO _hash;
 
   IF NOT EXISTS (SELECT 1 FROM graph_user WHERE email_user = 'admin@test.com') THEN

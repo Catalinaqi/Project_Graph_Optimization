@@ -18,115 +18,121 @@
  * - created_at_version (Date): Timestamp of creation.
  */
 
-import { DataTypes, InferAttributes, InferCreationAttributes, Model, Sequelize } from "sequelize";
+import {
+  DataTypes,
+  InferAttributes,
+  InferCreationAttributes,
+  Model,
+  Sequelize,
+} from "sequelize";
 import logger from "@/config/logger";
 
 export class GraphVersionModel extends Model<
-    InferAttributes<GraphVersionModel>,
-    InferCreationAttributes<GraphVersionModel>
+  InferAttributes<GraphVersionModel>,
+  InferCreationAttributes<GraphVersionModel>
 > {
-    declare id_version: number;
-    declare id_model: number;
-    declare version_number_version: number;
-    declare graph_version: Record<string, unknown>;
-    declare node_count_version: number;
-    declare edge_count_version: number;
-    declare alpha_used_version: string | null;
-    declare id_creator_user: number;
-    declare created_at_version: Date;
+  declare id_version: number;
+  declare id_model: number;
+  declare version_number_version: number;
+  declare graph_version: Record<string, unknown>;
+  declare node_count_version: number;
+  declare edge_count_version: number;
+  declare alpha_used_version: string | null;
+  declare id_creator_user: number;
+  declare created_at_version: Date;
 
-    static initModel(sequelize: Sequelize): typeof GraphVersionModel {
-        logger.debug("[GraphVersionModel] Initializing model...");
+  static initModel(sequelize: Sequelize): typeof GraphVersionModel {
+    logger.debug("[GraphVersionModel] Initializing model...");
 
-        GraphVersionModel.init(
-            {
-                id_version: {
-                    type: DataTypes.INTEGER,
-                    autoIncrement: true,
-                    primaryKey: true,
-                    allowNull: false,
-                    field: "id_version",
-                },
-                id_model: {
-                    type: DataTypes.INTEGER,
-                    allowNull: false,
-                    field: "id_model",
-                },
-                version_number_version: {
-                    type: DataTypes.INTEGER,
-                    allowNull: false,
-                    field: "version_number_version",
-                },
-                graph_version: {
-                    type: DataTypes.JSONB,
-                    allowNull: false,
-                    field: "graph_version",
-                },
-                node_count_version: {
-                    type: DataTypes.INTEGER,
-                    allowNull: false,
-                    field: "node_count_version",
-                },
-                edge_count_version: {
-                    type: DataTypes.INTEGER,
-                    allowNull: false,
-                    field: "edge_count_version",
-                },
-                alpha_used_version: {
-                    type: DataTypes.DECIMAL(3, 2),
-                    allowNull: true,
-                    field: "alpha_used_version",
-                },
-                id_creator_user: {
-                    type: DataTypes.INTEGER,
-                    allowNull: false,
-                    field: "id_creator_user",
-                },
-                created_at_version: {
-                    type: DataTypes.DATE,
-                    allowNull: false,
-                    defaultValue: DataTypes.NOW,
-                    field: "created_at_version",
-                },
-            },
-            {
-                sequelize,
-                tableName: "graph_version",
-                modelName: "GraphVersionModel",
-                timestamps: false,
-                indexes: [
-                    {
-                        unique: true,
-                        fields: ["id_model", "version_number_version"],
-                        name: "uq_gv_model_version",
-                    },
-                    {
-                        fields: ["id_model", "created_at_version"],
-                        name: "idx_gv_model_created_at",
-                    },
-                    {
-                        fields: ["node_count_version", "edge_count_version"],
-                        name: "idx_gv_counts",
-                    },
-                ],
-            }
-        );
-        return GraphVersionModel;
-    }
+    GraphVersionModel.init(
+      {
+        id_version: {
+          type: DataTypes.INTEGER,
+          autoIncrement: true,
+          primaryKey: true,
+          allowNull: false,
+          field: "id_version",
+        },
+        id_model: {
+          type: DataTypes.INTEGER,
+          allowNull: false,
+          field: "id_model",
+        },
+        version_number_version: {
+          type: DataTypes.INTEGER,
+          allowNull: false,
+          field: "version_number_version",
+        },
+        graph_version: {
+          type: DataTypes.JSONB,
+          allowNull: false,
+          field: "graph_version",
+        },
+        node_count_version: {
+          type: DataTypes.INTEGER,
+          allowNull: false,
+          field: "node_count_version",
+        },
+        edge_count_version: {
+          type: DataTypes.INTEGER,
+          allowNull: false,
+          field: "edge_count_version",
+        },
+        alpha_used_version: {
+          type: DataTypes.DECIMAL(3, 2),
+          allowNull: true,
+          field: "alpha_used_version",
+        },
+        id_creator_user: {
+          type: DataTypes.INTEGER,
+          allowNull: false,
+          field: "id_creator_user",
+        },
+        created_at_version: {
+          type: DataTypes.DATE,
+          allowNull: false,
+          defaultValue: DataTypes.NOW,
+          field: "created_at_version",
+        },
+      },
+      {
+        sequelize,
+        tableName: "graph_version",
+        modelName: "GraphVersionModel",
+        timestamps: false,
+        indexes: [
+          {
+            unique: true,
+            fields: ["id_model", "version_number_version"],
+            name: "uq_gv_model_version",
+          },
+          {
+            fields: ["id_model", "created_at_version"],
+            name: "idx_gv_model_created_at",
+          },
+          {
+            fields: ["node_count_version", "edge_count_version"],
+            name: "idx_gv_counts",
+          },
+        ],
+      },
+    );
+    return GraphVersionModel;
+  }
 
-    static associate(models: any) {
-        logger.debug("[GraphVersionModel] Registering associations...");
+  static associate(models: any) {
+    logger.debug("[GraphVersionModel] Registering associations...");
 
-        GraphVersionModel.belongsTo(models.GraphModel, {
-            foreignKey: "id_model",
-            as: "model",
-            onDelete: "CASCADE",
-        });
+    GraphVersionModel.belongsTo(models.GraphModel, {
+      foreignKey: "id_model",
+      as: "model",
+      onDelete: "CASCADE",
+    });
 
-        GraphVersionModel.belongsTo(models.GraphUser, {
-            foreignKey: "id_creator_user",
-            as: "creator",
-            onDelete: "RESTRICT",
-        });
-    }
+    GraphVersionModel.belongsTo(models.GraphUser, {
+      foreignKey: "id_creator_user",
+      as: "creator",
+      onDelete: "RESTRICT",
+    });
+  }
 }

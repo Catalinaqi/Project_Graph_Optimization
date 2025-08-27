@@ -1,7 +1,7 @@
 BEGIN;
 
 -- =========================
--- Limpieza (drop en orden de dependencias)
+-- Cleanup (drop in dependency order)
 -- =========================
 DROP TABLE IF EXISTS graph_simulation_result CASCADE;
 DROP TABLE IF EXISTS graph_simulation CASCADE;
@@ -12,12 +12,12 @@ DROP TABLE IF EXISTS graph_model CASCADE;
 DROP TABLE IF EXISTS graph_user CASCADE;
 
 -- =========================
--- Extensiones (opcional)
+-- Extensions (optional)
 -- =========================
 CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 
 -- =========================
--- ENUMS (se conservan)
+-- ENUMS (preserved)
 -- =========================
 DO $$
 BEGIN
