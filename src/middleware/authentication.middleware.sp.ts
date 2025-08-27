@@ -1,6 +1,6 @@
 import {NextFunction, Request, Response} from "express";
 import JwtUtils from "@/common/util/jwt.util";
-import {getError} from "@/common/util/api.error.util";
+import {getError} from "@/common/util/api-error";
 import {UserPayloadTypeSafe} from "@/common/types";
 import {ErrorEnum} from "@/common/enums";
 import logger from "@/config/logger";

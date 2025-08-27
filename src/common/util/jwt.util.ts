@@ -6,7 +6,7 @@ import environment from "@/config/enviroment";
 import logger from "@/config/logger";
 
 import { ErrorEnum } from "@/common/enums";
-import { getError } from "@/common/util/api.error.util";
+import { getError } from "@/common/util/api-error";
 import type { UserPayloadTypeSafe } from "@/common/types";
 
 /**

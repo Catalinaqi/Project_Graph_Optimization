@@ -1,5 +1,5 @@
 import { Router } from "express";
-import ModelsController from "@/controller/ModelController";
+import ModelsController from "@/controller/model.controller";
 import {authenticationMiddleware} from "@/middleware/authentication.middleware"; // tu JWT
 import { validationMiddlewareV2 }  from "@/middleware/validate.middleware";
 import {SimulationController} from "@/controller/simulation.controller";
@@ -12,7 +12,7 @@ import {
     weightChangeListQuery,
     weightChangeModerationParams
 } from '@/common/util/validation-schema';
-import WeightChangeController from '@/controller/WeightChangeController';
+import WeightChangeController from '@/controller/weight-change.controller';
 
 const router = Router();
 const simulationController = new SimulationController();

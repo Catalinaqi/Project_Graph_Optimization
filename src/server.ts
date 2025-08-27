@@ -1,7 +1,7 @@
 import logger from "@/config/logger";
 import environment from "@/config/enviroment";
 import Database from "@/database/database";
-import { ensureKeysExist } from "@/common/util/generateKeys";
+import { ensureKeysExist } from "@/common/util/generate-keys";
 import { initModels } from "@/model"; // models entry point
 import listEndpoints from "express-list-endpoints";
 

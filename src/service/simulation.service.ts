@@ -1,7 +1,7 @@
 // src/service/simulation.service.ts
-import { SimulationFacade } from "./simulation/SimulationFacade";
-import { ModelRepository} from "@/repository/ModelRepository";
-import { getError } from "@/common/util/api.error.util";
+import { SimulationFacade } from "./simulation/simulation-facade";
+import { ModelRepository} from "@/repository/model.repository";
+import { getError } from "@/common/util/api-error";
 import { ErrorEnum } from "@/common/enums";
 import logger from "@/config/logger";
 const facade = new SimulationFacade();
