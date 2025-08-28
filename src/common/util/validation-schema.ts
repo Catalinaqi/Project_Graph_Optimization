@@ -37,7 +37,7 @@ const GraphWeightsSchema = Joi.object()
     ),
   )
   .required()
-  // Check mínimo: al menos 1 nodo y 1 arco
+
   .custom((value, helpers) => {
     const nodes = Object.keys(value).length;
     const edges = Object.values(value).reduce(

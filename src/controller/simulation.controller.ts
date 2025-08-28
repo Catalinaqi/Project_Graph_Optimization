@@ -5,6 +5,18 @@ import { ErrorEnum } from "@/common/enums";
 import logger from "@/config/logger";
 
 export class SimulationController {
+  /**
+   * POST /simulations/:id/simulate
+   * * Description:
+   * * Simulates an edge in a model from a start point to a goal point without charging the user.
+   * * Objective:
+   * * - Extract `from`, `to`, `start`, `stop`, `step`, `origin`, and `goal` from the request body.
+   * * - Extract `id` (modelId) from the request parameters.
+   * * - Extract `userId` from the authenticated user in the request.
+   * * - Validate the input parameters.
+   * * - Call `SimulationService.simulateEdge` to perform the simulation.
+   * * - Return a JSON response with the simulation result.
+   */
   async simulate(req: Request, res: Response, next: NextFunction) {
     try {
       const modelId = Number(req.params.id);
@@ -45,6 +57,7 @@ export class SimulationController {
         );
       }
 
+      // Additional validation can be added here as needed
       const data = await SimulationService.simulateEdge({
         modelId,
         from,

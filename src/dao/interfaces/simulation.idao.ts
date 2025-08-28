@@ -2,6 +2,9 @@ import { GraphSimulationModel } from "@/model/graph-simulation.model";
 import { GraphSimulationResultModel } from "@/model/graph-simulation-result.model";
 
 export interface SimulationIdao {
+  /**
+   * Create a new graph simulation.
+   *  **/
   createSimulation(data: {
     id_model: number;
     version_number_simulation: number;
@@ -14,6 +17,9 @@ export interface SimulationIdao {
     created_at_simulation: Date;
   }): Promise<GraphSimulationModel>;
 
+  /**
+   * Create a new graph simulation result.
+   *  **/
   createSimulationResult(data: {
     id_simulation: number;
     tested_weight_simulation_result: number;

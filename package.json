@@ -14,8 +14,8 @@
     "build": "tsc && tsc-alias",
     "prestart": "node dist/common/util/generate-keys.js",
     "start": "node dist/server.js",
-    "start:dev": "dotenv -e .env.development -- npm run dev",
-    "start:prod": "dotenv -e .env.production -- npm run build && npm start"
+    "start:dev": "dotenv -e .env -- npm run dev",
+    "start:prod": "dotenv -e .env -- npm run build && npm start"
   },
   "dependencies": {
     "dotenv": "^17.2.1",

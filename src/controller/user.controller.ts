@@ -50,22 +50,25 @@ export const UserController = {
    * Endpoint: POST /users/recharge
    *
    * Description:
-   * Recharges a user's token balance (admin-only action).
-   * Also records an audit of the recharge operation.
+   * Allows an admin to recharge tokens for a specified user.
+   * Requires admin authentication and logs the action for auditing.
    *
    * Parameters:
    * @param req {Request} - Express request object containing:
-   *   - body.email {string} - Target user's email.
-   *   - body.rechargeTokens {number} - New token balance to set.
-   *   - body.reason {string | undefined} - Optional reason for the recharge.
-   *   - req.user!.id {string} - The admin user ID performing the operation.
-   * @param res {Response} - Express response object used to return confirmation.
-   * @param next {NextFunction} - Express next function for error handling.
-   *
-   * Response:
-   * - 200 OK: JSON object with confirmation message and updated balance.
-   * - 403 Forbidden: if the user is not authorized (non-admin).
-   * - 404 Not Found: if the target user does not exist.
+   *  - req.body.email: Email of the user to recharge tokens for.
+   *  - req.body.rechargeTokens: Number of tokens to add.
+   *  - req.body.reason: Reason for the recharge (for auditing).
+   *  - req.user: Authenticated admin user (from JWT).
+   *  @param res {Response} - Express response object used to return success message and updated user data.
+   *  @param next {NextFunction} - Express next function for error handling.
+   *  Response:
+   *  - 201 Created: JSON object with success message and updated user data.
+   *  - 400 Bad Request: if input validation fails.
+   *  - 403 Forbidden: if the requester is not an admin.
+   *  - 404 Not Found: if the target user does not exist.
+   *  - 500 Internal Server Error: for unexpected errors.
+   *  Audit:
+   *  Logs the admin ID, target user email, number of tokens recharged, and reason.
    */
   async recharge(req: Request, res: Response, next: NextFunction) {
     try {

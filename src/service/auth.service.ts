@@ -6,37 +6,7 @@ import { SecurityFactory } from "@/common/security/security-factory";
 const hasher = SecurityFactory.makePasswordHasher();
 const jwt = SecurityFactory.makeJwtStrategy();
 
-/**
- * AuthService (Facade)
- *
- * Description:
- * Central entry point for user authentication and registration logic.
- * Orchestrates persistence (UserRepository), password hashing (bcrypt strategy),
- * and JWT issuance (RS256 strategy).
- *
- * Objective:
- * - Register new standard users with a securely hashed password.
- * - Authenticate existing users and return a signed JWT.
- */
 const AuthService = {
-  /**
-   * register
-   *
-   * Description:
-   * Registers a new standard user if the email is not already taken.
-   *
-   * Objective:
-   * - Ensure uniqueness by email.
-   * - Hash the provided password using the configured password hasher.
-   * - Create the user with an initial token balance from configuration.
-   *
-   * Parameters:
-   * @param email {string} - New user's email address.
-   * @param password {string} - New user's plaintext password (will be hashed).
-   *
-   * Returns:
-   * @returns {Promise<{ id: string; email: string }>} - Newly created user’s id and email.
-   */
   async register(
     email: string,
     password: string,
@@ -81,24 +51,6 @@ const AuthService = {
     }
   },
 
-  /**
-   * login
-   *
-   * Description:
-   * Authenticates a user by verifying credentials and issues a signed JWT.
-   *
-   * Objective:
-   * - Validate the user exists.
-   * - Verify the provided password against the stored hash.
-   * - Sign and return a JWT containing minimal user claims (id, email, role).
-   *
-   * Parameters:
-   * @param email {string} - User’s email address.
-   * @param password {string} - User’s plaintext password.
-   *
-   * Returns:
-   * @returns {Promise<{ token: string; expiresIn: number }>} - Signed JWT and expiration (in seconds).
-   */
   async login(
     email: string,
     password: string,

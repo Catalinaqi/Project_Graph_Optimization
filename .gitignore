@@ -16,6 +16,8 @@ lerna-debug.log*
 .tmp/
 temp/
 tmp/
+appmap.yml
+npm
 
 # --- Test coverage & caches
 coverage/

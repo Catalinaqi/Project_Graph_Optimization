@@ -41,7 +41,6 @@ export const listRequests = (
 export const findRequest = (requestId: number, opt?: Tx) =>
   WeightChangeDao.findById(requestId, opt);
 
-// Helpers de versiones
 export async function createNewVersionFrom(
   modelId: number,
   baseVersionNumber: number,
