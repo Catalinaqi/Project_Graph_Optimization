@@ -1,5 +1,15 @@
 # Graph Optimization Backend
 
+<div style="margin:auto;" align="center">
+  <img src="./public/tesse.jpg" style="width:97%; height:50%; object-fit:cover; object-position:center;" />
+</div>
+
+> _"Time is relative. It can stretch and it can squeeze, but… it can’t run backwards..." - Dr. Brand, Interstellar (2014)_
+
+<div align="center">
+  <sub>Crafted with ❤️ and endless curiosity</sub>
+</div>
+<br><br>
 
 [![Docker](https://img.shields.io/badge/Docker-2CA5E0?style=for-the-badge&logo=docker&logoColor=white)](https://www.docker.com/)
 [![Docker Compose](https://img.shields.io/badge/Docker%20Compose-%23FF69B4?style=for-the-badge&logo=docker&logoColor=white)](https://docs.docker.com/compose/)
