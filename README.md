@@ -1,7 +1,7 @@
 # Graph Optimization Backend
 
 <div style="margin:auto;" align="center">
-  <img src="./public/tesse.jpg" style="width:70%; height:50%; object-fit:cover; object-position:center;" />
+  <img src="./public/tesse.jpg" style="width:50%; height:50%; object-fit:cover; object-position:center;" />
 </div>
 
 > _"Time is relative. It can stretch and it can squeeze, but… it can’t run backwards..." - Dr. Brand, Interstellar (2014)_
