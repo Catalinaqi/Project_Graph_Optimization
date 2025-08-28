@@ -3,6 +3,9 @@ import type { GraphWeightChangeRequestModel } from "@/model/graph-weight-change-
 import { GraphRequestStatusEnum } from "@/common/enums";
 
 export interface WeightChangeIdao {
+  /**
+   * Create a new weight change request.
+   *  **/
   create(
     data: {
       id_model: number;
@@ -14,11 +17,17 @@ export interface WeightChangeIdao {
     opt?: Tx,
   ): Promise<GraphWeightChangeRequestModel>;
 
+  /**
+   * Find a weight change request by its ID.
+   *  **/
   findById(
     requestId: number,
     opt?: Tx,
   ): Promise<GraphWeightChangeRequestModel | null>;
 
+  /**
+   * List weight change requests for a specific model with optional filters.
+   *  **/
   list(
     modelId: number,
     filters: {
@@ -32,8 +41,14 @@ export interface WeightChangeIdao {
     opt?: Tx,
   ): Promise<GraphWeightChangeRequestModel[]>;
 
+  /**
+   * Approve a weight change request.
+   *  **/
   approve(requestId: number, opt?: Tx): Promise<number>;
 
+  /**
+   * Reject a weight change request with a reason.
+   *  **/
   reject(requestId: number, reason: string, opt?: Tx): Promise<number>;
 }
 

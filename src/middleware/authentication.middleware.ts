@@ -23,7 +23,7 @@ const jwt = SecurityFactory.makeJwtStrategy();
  *
  * Parameters:
  * @param req {Request} - The incoming HTTP request. Expects an Authorization header with a Bearer token.
- * @param res {Response} - The HTTP response (unused in this middleware).
+ * @param _res {Response} - The HTTP response (unused in this middleware).
  * @param next {NextFunction} - Callback to pass control to the next middleware or error handler.
  *
  * Returns:

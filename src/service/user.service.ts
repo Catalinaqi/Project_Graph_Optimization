@@ -1,34 +1,7 @@
 import logger from "@/config/logger";
 import UserRepository from "@/repository/user.repository";
 
-/**
- * UserService (Facade)
- *
- * Description:
- * Provides business operations related to users. Acts as a façade between
- * controllers and repositories by encapsulating application logic.
- *
- * Objective:
- * - Retrieve the authenticated user's profile.
- * - Allow an admin to recharge a user's token balance.
- */
 const UserService = {
-  /**
-   * me
-   *
-   * Description:
-   * Retrieves a user's profile by user id.
-   *
-   * Objective:
-   * - Fetch user data from the repository.
-   * - Return a normalized shape for the API layer.
-   *
-   * Parameters:
-   * @param userId {string} - Unique identifier of the user.
-   *
-   * Returns:
-   * @returns {Promise<{ id: string; email: string; role: string; tokens: number }>}
-   */
   async me(userId: number) {
     logger.debug("[UserService] Fetching user profile", { userId });
     try {
@@ -60,25 +33,6 @@ const UserService = {
     }
   },
 
-  /**
-   * adminRecharge
-   *
-   * Description:
-   * Allows an administrator to set a user's token balance.
-   *
-   * Objective:
-   * - Update the target user's token balance.
-   * - Record who performed the operation and an optional reason for auditing.
-   *
-   * Parameters:
-   * @param targetEmail {string} - Email of the user whose balance will be updated.
-   * @param rechargeTokens {number} - Recharge token to set for the user.
-   * @param performerId {string} - Identifier of the admin performing the operation.
-   * @param reason {string} - Optional reason for the balance update.
-   *
-   * Returns:
-   * @returns {Promise<any>} - Updated user data plus an ISO timestamp under `updatedAt`.
-   */
   async adminRecharge(
     targetEmail: string,
     rechargeTokens: number,

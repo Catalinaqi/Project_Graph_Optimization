@@ -2,25 +2,6 @@ import type { GraphUserModel } from "@/model/graph-user.model";
 import type { Transaction } from "sequelize";
 import type { Tx } from "@/common/types";
 
-/**
- * UserIrepository (Interface)
- *
- * Description:
- * Defines the contract for a user repository. It ensures that any concrete
- * implementation (e.g., `UserRepository`) provides the required methods for
- * retrieving, creating, and updating users.
- *
- * Objective:
- * - Abstract away database-specific operations.
- * - Provide type-safe access to user-related persistence methods.
- * - Enforce a consistent API across different repository implementations.
- *
- * Main Methods:
- * - getByEmail → find a user by email.
- * - getById → find a user by id.
- * - create → create a new user with a hashed password and initial tokens.
- * - updateBalanceByEmail → update the token balance of a user and return update details.
- */
 export interface UserIrepository {
   /**
    * getByEmail
@@ -40,29 +21,31 @@ export interface UserIrepository {
    * getById
    *
    * Description:
-   * Retrieves a user by unique identifier from the database.
+   * Retrieves a user by their unique ID from the database.
    *
    * Parameters:
-   * @param id {string} - Unique identifier of the user.
+   * @param id {number} - The unique identifier of the user.
+   * @param opt {Tx} - Optional transaction object for database operations.
    *
    * Returns:
    * @returns {Promise<GraphUserModel | null>} - The user if found, otherwise null.
    */
+
   getById(id: number, opt?: Tx): Promise<GraphUserModel | null>;
 
   /**
    * create
    *
    * Description:
-   * Creates a new user in the database with hashed password and initial token balance.
+   * Creates a new user in the database with the provided email, password hash, and initial token balance.
    *
    * Parameters:
-   * @param email {string} - Email address of the new user.
-   * @param passwordHash {string} - Hashed password of the user.
-   * @param initialTokens {number} - Initial number of tokens assigned to the user.
+   * @param email {string} - The email address of the new user.
+   * @param passwordHash {string} - The hashed password for the new user.
+   * @param initialTokens {number} - The initial token balance for the new user.
    *
    * Returns:
-   * @returns {Promise<GraphUserModel>} - The newly created user entity.
+   * @returns {Promise<GraphUserModel>} - The newly created user.
    */
   create(
     email: string,
@@ -71,21 +54,20 @@ export interface UserIrepository {
   ): Promise<GraphUserModel>;
 
   /**
-   * updateBalanceByEmail
+   * updateTokensByEmail
    *
    * Description:
-   * Updates the token balance of a user identified by email.
-   * Also records the id of the performer and an optional reason for auditing.
+   * Updates the token balance of a user identified by their email address.
    *
    * Parameters:
-   * @param email {string} - Email address of the target user.
-   * @param rechargeTokens {number} - New token balance to set.
-   * @param performerId {string} - Id of the admin/user performing the operation.
-   * @param reason {string} - Optional reason for the recharge (e.g., "admin recharge").
+   * @param email {string} - The email address of the user whose tokens are to be updated.
+   * @param rechargeTokens {number} - The amount of tokens to add (or subtract if negative) to the user's balance.
+   * @param performerId {number} - The ID of the user performing the token update.
+   * @param reason {string} - Optional reason for the token update.
    *
    * Returns:
-   * @returns {Promise<{ email: string; previousTokens: number; newTokens: number; diff: number }>}
-   * - An object with email, previous tokens, new tokens, and difference applied.
+   * @returns {Promise<{ email: string; previousTokens: number; rechargeTokens: number; totalRechargeTokens: number; }>} - An object containing details of the token update operation.
+   *
    */
   updateTokensByEmail(
     email: string,
@@ -100,6 +82,23 @@ export interface UserIrepository {
     //diff: number;
   }>;
 
+  /**
+   * setAbsoluteBalance
+   *
+   * Description:
+   * Sets the absolute token balance for a user identified by their user ID.
+   *
+   * Parameters:
+   * @param args {object} - An object containing the following properties:
+   *   - userId {number}: The ID of the user whose balance is to be set.
+   *   - newBalance {number}: The new absolute token balance to set for the user.
+   *   - performerId {number}: The ID of the user performing the balance update.
+   *   - reason {string}: The reason for setting the new balance.
+   *   - transaction {Transaction} [optional]: An optional Sequelize transaction object for atomic operations.
+   *
+   *   Returns:
+   *   @returns {Promise<{ newBalance: number }>} - An object containing the updated balance.
+   */
   chargeByUserId(args: {
     userId: number;
     newBalance: number;

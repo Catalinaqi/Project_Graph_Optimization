@@ -1,5 +1,25 @@
 # Graph Optimization Backend
 
+
+[![Docker](https://img.shields.io/badge/Docker-2CA5E0?style=for-the-badge&logo=docker&logoColor=white)](https://www.docker.com/)
+[![Docker Compose](https://img.shields.io/badge/Docker%20Compose-%23FF69B4?style=for-the-badge&logo=docker&logoColor=white)](https://docs.docker.com/compose/)
+[![ESLint](https://img.shields.io/badge/ESLint-3A33D1?style=for-the-badge&logo=eslint&logoColor=white)](https://eslint.org/)
+[![Express.js](https://img.shields.io/badge/Express.js-000000?style=for-the-badge&logo=express&logoColor=white)](https://expressjs.com/)
+[![GitHub](https://img.shields.io/badge/GitHub-%23121011?style=for-the-badge&logo=github&logoColor=white)](https://github.com/)
+[![JavaScript](https://img.shields.io/badge/JavaScript-323330?style=for-the-badge&logo=javascript&logoColor=F7DF1E)](https://developer.mozilla.org/en-US/docs/Web/JavaScript)
+[![Jest](https://img.shields.io/badge/Jest-C21325?style=for-the-badge&logo=jest&logoColor=white)](https://jestjs.io/)
+[![JWT](https://img.shields.io/badge/JWT-000000?style=for-the-badge&logo=jsonwebtokens&logoColor=white)](https://jwt.io/)
+[![JSON](https://img.shields.io/badge/JSON-5E5C5C?style=for-the-badge&logo=json&logoColor=white)](https://www.json.org/)
+[![Node.js](https://img.shields.io/badge/Node.js-339933?style=for-the-badge&logo=nodedotjs&logoColor=white)](https://nodejs.org/)
+[![NPM](https://img.shields.io/badge/NPM-CB3837?style=for-the-badge&logo=npm&logoColor=white)](https://www.npmjs.com/)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-%23336791?style=for-the-badge&logo=postgresql&logoColor=white)](https://www.postgresql.org/)
+[![Postman](https://img.shields.io/badge/Postman-FF6C37?style=for-the-badge&logo=postman&logoColor=white)](https://www.postman.com/)
+[![Prettier](https://img.shields.io/badge/Prettier-1A2C34?style=for-the-badge&logo=prettier&logoColor=F7BA3E)](https://prettier.io/)
+[![Sequelize](https://img.shields.io/badge/Sequelize-52B0E7?style=for-the-badge&logo=sequelize&logoColor=white)](https://sequelize.org/)
+[![Swagger](https://img.shields.io/badge/Swagger-85EA2D?style=for-the-badge&logo=swagger&logoColor=white)](https://swagger.io/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+
+
 ## Introduction
 This backend system is designed to manage the **creation, execution, and evaluation of graph optimization models**.  
 It supports authenticated user contributions for updating edge weights, simulating a **crowd-sourcing model** where users collaboratively refine optimization data.  
@@ -7,7 +27,6 @@ It supports authenticated user contributions for updating edge weights, simulati
 The system uses **Dijkstra’s shortest path algorithm** for graph optimization.  
 All API endpoints are **secured with JWT authentication**.  
 
----
 
 ## Project Objective
 - Enable users to **create graph optimization models** with node and edge weights.  
@@ -18,7 +37,6 @@ All API endpoints are **secured with JWT authentication**.
 - Implement a **token-based economy**, where each action consumes credits, managed via JWT-authenticated users.  
 - Include **Admin functionality** to recharge tokens.  
 
----
 
 ## Features
 
@@ -67,33 +85,36 @@ All API endpoints are **secured with JWT authentication**.
     - Multiple versions preloaded  
 
 - **API Documentation**
-  - Swagger/OpenAPI specification
-    - Interactive API documentation is available at:
+  - Swagger/OpenAPI specification (Interactive API documentation)    
     - http://localhost:3000/api/docs/
   - Postman-ready endpoints  
 
----
 
 ## Technology Stack
-- **Node.js** + **Express** – API framework  
-- **TypeScript** – Type safety and maintainability  
-- **Sequelize** – ORM for PostgreSQL  
-- **PostgreSQL** – Relational database  
-- **JWT (RS256)** – Authentication & authorization  
-- **node-dijkstra** – Graph optimization algorithm  
-- **Docker & Docker Compose** – Containerization  
-- **Jest + Supertest** – Unit and integration testing  
 
----
+- **Backend**: 
+  - **Node.js** + **Express** – API framework
+  - **TypeScript** – Type safety and maintainability
+- **Database**: 
+  - **Sequelize** – ORM for PostgreSQL
+  - **PostgreSQL** – Relational database
+- **Authentication**: 
+  - **JWT (RS256)** – Authentication & authorization
+- **Containerization**: 
+  - Docker, Docker Compose
+- **Documentation**: 
+  - Swagger/OpenAPI
+- **Testing**: 
+  - Jest
+
 
 ## Installation
 
-### Prerequisites
-- Node.js >= 18  
-- Docker & Docker Compose  
-- PostgreSQL (optional if not using Docker)  
+### Prerequisites (Production)
+- **Docker Engine** (to run containers)
+- **PostgreSQL Client** (to execute SQL scripts if needed, e.g., `graphDDL.sql`.`seeders.sql`)
 
-### Local Setup
+### Local Setup (Development)
 ```bash
 npm install
 npm run build
@@ -104,33 +125,68 @@ npm run start
 
 Copy `.env.example` into `.env` and configure values:
 
-* `INIT_USER_TOKENS=100`
-* `ALPHA=0.9`
-* Database connection settings
-* JWT keys
+```env
+## Content of .env.example
+NODE_ENV=development
+API_PORT=3001
+APP_TZ=Europe/Rome
 
-### Generate JWT Keys
+# PostgreSQL
+POSTGRES_USER=postgres
+POSTGRES_PASSWORD=postgres
+POSTGRES_DB=graphdb
+#dev:localhost / prod:postgres
+POSTGRES_HOST=localhost
+POSTGRES_PORT=5432
+PGSSL=false
 
-```bash
-openssl genrsa -out keys/private.key 2048
-openssl rsa -in keys/private.key -pubout -out keys/public.key
+# JWT
+JWT_PRIVATE_KEY_PATH=./keys/private.key
+JWT_PUBLIC_KEY_PATH=./keys/public.key
+JWT_EXPIRES_IN=3600
+JWT_ALGORITHM=RS256
+JWT_SALT_ROUNDS=12
+INIT_USER_TOKENS=100
+JWT_ISSUER=backend-graphs
+JWT_AUDIENCE=api-clients
+
+# Logging / Graph
+DB_LOGGING=false
+GRAPH_ALPHA=0.9
+
+# Admin user (prod)
+ADMIN_EMAIL=admin@test.com
+ADMIN_PASSWORD=supersecurepassword
+ADMIN_TOKENS=999
+
 ```
 
-### Docker Setup
+## Docker Setup
+
+### First Launch or Rebuild
 
 ```bash
-docker-compose up --build
+docker compose up --build
+# or for detached mode
+docker compose up --build -d
 ```
 
-### Development Mode
+### Subsequent Launches
 
 ```bash
-npm run dev
+docker compose up
+# or for detached mode
+docker compose up -d
 ```
 
----
+## Development Setup
+
+The Docker configuration mounts `src` and `tsconfig.json` as volumes, so changes to these files are automatically synced to the container. Changes to other files require a rebuild.
+
 
 ## API Documentation
+
+Complete API documentation is available at `/api/docs` when the server is running. It provides an interactive interface to explore all endpoints, request/response formats, and authentication requirements.
 
 ### Authentication
 
@@ -170,7 +226,6 @@ npm run dev
 | ------ | -------------------------- | ----------------------- |
 | POST   | `/api/models/:id/simulate` | Run simulation on edges |
 
----
 
 ## Example Requests
 
@@ -222,17 +277,20 @@ POST /api/models/1/simulate
 }
 ```
 
----
 
 ## Database Structure
 
 Entities include:
 
-* **Users** – with roles and tokens
-* **Graph Models** – nodes, edges, versions
-* **Weight Change Requests** – pending/approved/rejected
-* **Simulations** – simulation runs and results
-* **Token Transactions** – track token balance history
+- **graph_user** – users with roles and token balances
+- **graph_model** – graph models with nodes and edges
+- **graph_version** – versioning information for models
+- **graph_weight_change_request** – requests for edge weight changes (pending/approved/rejected)
+- **graph_token_transaction** – logs of token transactions (creation, recharge, execution)
+- **graph_simulation** – simulation runs configuration (ranges, steps)
+- **graph_simulation_result** – results of simulation runs (paths, costs, execution times)
+
+For detailed database documentation, see [DATABASE_DOC.md](./DATABASE_DOC.md).
 
 Seeders provide:
 
@@ -242,75 +300,275 @@ Seeders provide:
 
 ---
 
+## Architecture & Design Patterns
+
+InferNode implements a **multi-layered** architecture with some design patterns to ensure maintainability and separation of concerns.
+
 ## Layered Architecture
 
-The system follows a **layered architecture** with strict separation of concerns:
+The application follows a layered architecture pattern with separation of responsibilities:
 
+```text
+┌─────────────────────────────────────────────────────┐
+│                     Router                          │ ← Route definitions
+├─────────────────────────────────────────────────────┤
+│                   Controllers                       │ ← Request handling
+├─────────────────────────────────────────────────────┤
+│                    Services                         │ ← Business logic
+├─────────────────────────────────────────────────────┤
+│                  Repositories                       │ ← Data access
+├─────────────────────────────────────────────────────┤
+│                      DAO                            │ ← Database operations
+├─────────────────────────────────────────────────────┤
+│                     Models                          │ ← Data structures
+└─────────────────────────────────────────────────────┘
 ```
-+-----------------+        ← Route definitions
-|     Router      |
-+-----------------+
-|   Controllers   |        ← Request handling
-+-----------------+
-|    Services     |        ← Business logic (tokens, Dijkstra, validation)
-+-----------------+
-|  Repositories   |        ← Data access abstraction
-+-----------------+
-|       DAO       |        ← Database operations
-+-----------------+
-|     Models      |        ← Data schema and structures
-+-----------------+
+
+The workflow for handling requests follows this path:
+
+1. **Router**: Defines API endpoints and routes requests to appropriate controllers
+2. **Controllers**: Handle HTTP requests/responses and delegate business logic to services
+3. **Services**: Implement core business logic and orchestrate operations
+4. **Repositories**: Provide an abstraction layer for data access operations
+5. **DAO (Data Access Objects)**: Execute database operations and handle queries
+6. **Models**: Define database schema, relationships, and data structures
+
+
+## Architectural Pattern Implementation
+
+### 1. **Repository Pattern**
+- Provides a **consistent interface** for CRUD and custom operations.  
+- Encapsulates DAOs and exposes **business-oriented persistence methods** to services.  
+- Example in project:  
+  - `user.repository.ts` → handles users  
+  - `model.repository.ts` → manages graph models and versions  
+  - `simulation.repository.ts` → handles simulations  
+  - `weight-change.repository.ts` → manages weight change requests  
+
+```typescript
+export class ModelRepository {
+  async createModelWithVersion(args: any, opt?: Tx){ /* ... */}
+  async getLatestVersion(modelId: number, opt?: Tx){ /* ... */}
+  async getModel(modelId: number, opt?: Tx){ /* ... */}
+};
+````
+* **Repository Layer (`/src/repository`)** → Business-oriented persistence methods built on DAOs.
+
+### 2. **Data Access Object (DAO) Pattern**
+
+* **Low-level Sequelize operations** with error handling and logging.
+* Each DAO implements a specific interface (`.idao.ts`) for consistency.
+* Example in project:
+
+  * `model.dao.ts` → persistence for `graph_model` and `graph_version`
+  * `user.dao.ts` → persistence for `graph_user`
+  * `simulation.dao.ts` → persistence for `graph_simulation`
+  * `weight-change.dao.ts` → persistence for `graph_weight_change_request`
+
+```typescript
+const ModelDao = {
+  async createModel(data: Partial<GraphModel>, opt?: Tx){ /* ... */},
+  async createVersion(data: Partial<GraphVersionModel>, opt?: Tx){ /* ... */},
+  async findModelByPk(id: number, opt?: Tx){ /* ... */},
+  async findVersion(modelId: number, version: number, opt?: Tx){ /* ... */},
+  async findLatestVersion(modelId: number, opt?: Tx){ /* ... */}
+};
+```
+* **DAO Layer (`/src/dao`)** → Raw DB operations (Sequelize), error handling, logging.
+
+
+## Design Patterns Implementation
+
+The project employs several design patterns to enhance code organization, maintainability, and scalability. Below are the key patterns used:
+
+### 1. Creational Patterns
+
+- **Singleton** – `src/database/database.ts`  
+  Ensures a single database connection instance across the application.  
+
+```typescript
+export class Database {
+  private static instance: Database;
+
+  private constructor() { /* init connection */ }
+
+  public static getInstance(): Database {
+    if (!Database.instance) {
+      Database.instance = new Database();
+    }
+    return Database.instance;
+  }
+}
+````
+
+* **Abstract Factory** – `src/common/security/security-factory.ts`
+  Centralizes the creation of different security strategies (`jwt-strategy.ts`, `password-strategy.ts`).
+
+* **Builder** – `src/service/model/model-builder.ts`
+  Builds graph models step by step (nodes, edges, metadata).
+
+### 2. Structural Patterns
+
+* **Adapter** – `src/service/model/model-adapter.ts`
+  Adapts raw input data into the structure required by the `node-dijkstra` algorithm.
+
+* **Facade** – `src/service/model/model-facade.ts`, `src/service/simulation/simulation-facade.ts`
+  Provides simplified interfaces to complex subsystems (model creation/validation, simulation workflows).
+
+```typescript
+export class ModelFacade {
+  createAndValidateModel(data: any) {
+    const builder = new ModelBuilder();
+    const model = builder.setNodes(data.nodes).setEdges(data.edges).build();
+    return new ModelValidator().validate(model);
+  }
+}
 ```
 
-**Workflow**
+* **Decorator** – `src/middleware/` (`authentication.middleware.ts`, `authorization.middleware.ts`, `validate.middleware.ts`)
+  Adds cross-cutting responsibilities (auth, validation, error handling) by wrapping request handling.
 
-1. **Router** – Maps API endpoints.
-2. **Controllers** – Handle HTTP input/output.
-3. **Services** – Apply business rules (token deduction, graph execution).
-4. **Repositories** – Abstract persistence logic.
-5. **DAO** – Perform database queries/transactions.
-6. **Models** – Sequelize schemas.
+### 3. Behavioral Patterns
 
----
+* **Command** – `src/service/model/validation/create-model-command.ts`, `execute-model-command.ts`
+  Encapsulates actions (model creation, execution) as command objects, making them reusable and consistent.
 
-## Design Patterns
+* **Observer** – `src/service/model/model-observer.ts`
+  Watches for changes (like weight updates) and reacts with versioning or notifications.
 
-* **Repository Pattern**
-  Abstracts database access, isolating business logic from Sequelize.
+* **Strategy** – `src/service/simulation/simulation-strategy.ts`
+  Defines interchangeable algorithms for simulation (e.g., range-based, step-based).
 
-* **Factory Pattern**
-  Used for dynamic initialization (e.g., JWT strategy, services).
+```typescript
+interface SimulationStrategy {
+  runSimulation(data: any): any;
+}
 
-* **Command Pattern**
-  Encapsulates requests like **model creation, execution, weight updates**, ensuring consistent handling.
+class RangeSimulation implements SimulationStrategy {
+  runSimulation(data: any) {
+    return `Simulating with step ${data.step}`;
+  }
+}
 
-* **Middleware Pattern**
-  Provides reusable layers for authentication, error handling, validation, and logging.
+class SimulationContext {
+  constructor(private strategy: SimulationStrategy) {}
+  execute(data: any) { return this.strategy.runSimulation(data); }
+}
+```
 
----
+* **Chain of Responsibility** – `src/middleware/`
+  Requests pass through a chain of middlewares (`authentication → authorization → validation → error handler`).
+
+### Summary
+
+* **Database** → Singleton
+* **Security** → Abstract Factory (auth strategies)
+* **Middleware** → Chain of Responsibility + Decorator
+* **Model Services** → Builder, Adapter, Facade, Observer, Command
+* **Simulation Services** → Strategy, Facade
+
 
 ## Design
 
 ### Actors
 
-* **User** – Creates/executes models, submits weight changes, runs simulations.
-* **Admin** – Manages tokens, approves/rejects requests.
-* **System** – Executes shortest path algorithm, manages versions and persistence.
+* **Unauthenticated User** – Can register and log in to the system.
+* **Authenticated User** – Base actor that interacts with the system.
+  * **User** – Creates/executes models, submits weight changes, runs simulations.
+  * **Administrator** – Manages tokens, approves/rejects weight change requests.
+
+<div style="overflow:hidden; margin:auto;" align="center">
+  <img src="./docs/actors.drawio.png" style="width:50%; height:50%; object-fit:cover; object-position:center;" />
+</div>
 
 ### Use Cases
 
-* Register/login user
-* Create graph model
-* Execute model (Dijkstra shortest path)
-* Submit weight change request
-* Approve/reject weight change
-* Run simulations
-* Admin recharge tokens
+* **Register / Login user** – Unauthenticated users can register and authenticate with JWT.
+* **Create graph model** – Users can create a new graph model (requires enough tokens).
+* **Execute model (Dijkstra shortest path)** – Users can run the model to find the optimal path between nodes.
+* **Submit weight change request** – Users can request an update of edge weights.
+* **Approve / Reject weight change** – Model owners or admins can approve or reject pending requests.
+* **Run simulations** – Users can simulate weight variations on an edge.
+* **Admin recharge tokens** – Administrators can recharge tokens for users.
+
+<div style="overflow:hidden; margin:auto;" align="center">
+  <img src="./docs/useCaseDigram.drawio.png" style="width:50%; height:50%; object-fit:cover; object-position:center;" />
+</div>
 
 ### Sequence Diagrams
 
-* User authentication flow
+### User authentication flow
+
+* Registration
+<div style="overflow:hidden; margin:auto;" align="center">
+  <img src="./docs/SD_Register.svg" style="width:50%; height:50%; object-fit:cover; object-position:center;" />
+</div>
+
+* Login
+<div style="overflow:hidden; margin:auto;" align="center">
+  <img src="./docs/SD_Login.svg" style="width:50%; height:50%; object-fit:cover; object-position:center;" />
+</div>
+
+* Information User
+<div style="overflow:hidden; margin:auto;" align="center">
+  <img src="./docs/SD_Me.svg" style="width:50%; height:50%; object-fit:cover; object-position:center;" />
+</div>
+
+* Token recharge (Admin only)
+<div style="overflow:hidden; margin:auto;" align="center">
+  <img src="./docs/SD_Recharge.svg" style="width:50%; height:50%; object-fit:cover; object-position:center;" />
+</div>
+
+### Graph model flow
+
+#### Creation and execution lifecycle
 * Model creation + token deduction
+<div style="overflow:hidden; margin:auto;" align="center">
+  <img src="./docs/SD_CreationModel.svg" style="width:50%; height:50%; object-fit:cover; object-position:center;" />
+</div>
+
 * Execution of shortest path with Dijkstra
-* Weight change request lifecycle
-* Simulation workflow
+<div style="overflow:hidden; margin:auto;" align="center">
+  <img src="./docs/SD_ExecuteModel.svg" style="width:50%; height:50%; object-fit:cover; object-position:center;" />
+</div>
+
+
+#### Weight change request lifecycle
+* Aprroval of weight change request
+<div style="overflow:hidden; margin:auto;" align="center">
+  <img src="./docs/SD_ApproveModel.svg" style="width:50%; height:50%; object-fit:cover; object-position:center;" />
+</div>
+
+* Rejection of weight change request
+<div style="overflow:hidden; margin:auto;" align="center">
+  <img src="./docs/SD_RejectModel.svg" style="width:50%; height:50%; object-fit:cover; object-position:center;" />
+</div>
+
+#### Information versions and filtering
+* Model versioning
+<div style="overflow:hidden; margin:auto;" align="center">
+  <img src="./docs/SD_GetVertionsModel.svg" style="width:50%; height:50%; object-fit:cover; object-position:center;" />
+</div>
+
+* Model filtering
+<div style="overflow:hidden; margin:auto;" align="center">
+  <img src="./docs/SD_FiltersModel.svg" style="width:50%; height:50%; object-fit:cover; object-position:center;" />
+</div>
+
+#### Simulation lifecycle
+<div style="overflow:hidden; margin:auto;" align="center">
+  <img src="./docs/SD_SimulateModel.svg" style="width:50%; height:50%; object-fit:cover; object-position:center;" />
+</div>
+
+# Testing
+
+To run tests:
+
+```bash
+docker exec -it backend_graphs npm test
+
+```
+
+# License
+
+This project is licensed under the MIT License - see the [LICENSE](./LICENSE) file for details.

@@ -1,6 +1,6 @@
 import Database from "@/database/database";
 import { ModelRepository } from "@/repository/model.repository";
-import UserRepository from "@/repository/user.repository"; // ✅ usar repo de usuarios
+import UserRepository from "@/repository/user.repository";
 import { ModelBuilder } from "./model-builder";
 import { NodeDijkstraAdapter } from "./model-adapter";
 import { CreateModelCommand } from "./create-model-command";
@@ -114,7 +114,6 @@ export class ModelFacade {
 
         const execTimeMs = Number((Number(t1 - t0) / 1_000_000).toFixed(4));
 
-        // 🔔 Notificar observer
         modelObserver.notify("MODEL_EXECUTED", {
           modelId: input.modelId,
           path: result.path,
