@@ -52,7 +52,7 @@ DECLARE
 BEGIN
     -- Hash password
     SELECT crypt('admin123', gen_salt('bf', 12)) INTO _hash_admin;
-    SELECT crypt('user123', gen_salt('bf', 12)) INTO _hash_user;
+    SELECT crypt('12345678', gen_salt('bf', 12)) INTO _hash_user;
 
     -- ======================
     -- Admin (id = 1)
