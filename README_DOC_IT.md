@@ -308,7 +308,6 @@ Gli **Seeder** forniscono:
 * Modelli di grafo iniziali (≥ 10 nodi, ≥ 15 archi)  
 * Almeno 2 versioni ciascuno  
 
-Aquí tienes la traducción al **italiano** en formato `.md`:
 
 ````markdown
 ## Architettura & Design Patterns
