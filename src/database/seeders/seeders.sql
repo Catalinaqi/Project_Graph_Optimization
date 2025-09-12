@@ -2,25 +2,12 @@
 -- RESET DATI
 -- =====================================================
 
--- 1) Elimina richieste di cambio peso
 DELETE FROM graph_weight_change_request;
-
--- 2) Elimina risultati simulazioni
 DELETE FROM graph_simulation_result;
-
--- 3) Elimina simulazioni
 DELETE FROM graph_simulation;
-
--- 4) Elimina transazioni token
 DELETE FROM graph_token_transaction;
-
--- 5) Elimina versioni modelli
 DELETE FROM graph_version;
-
--- 6) Elimina modelli
 DELETE FROM graph_model;
-
--- 7) Elimina tutti gli utenti
 DELETE FROM graph_user;
 
 -- =====================================================
@@ -54,106 +41,120 @@ BEGIN
     SELECT crypt('admin123', gen_salt('bf', 12)) INTO _hash_admin;
     SELECT crypt('12345678', gen_salt('bf', 12)) INTO _hash_user;
 
-    -- ======================
     -- Admin (id = 1)
-    -- ======================
     INSERT INTO graph_user (email_user, password_user, role_user, tokens_user)
     VALUES ('admin@test.com', _hash_admin, 'admin', 999)
     RETURNING id_user INTO _admin_id;
 
-    -- ======================
     -- User02 (id = 2)
-    -- ======================
     INSERT INTO graph_user (email_user, password_user, role_user, tokens_user)
     VALUES ('user02@test.com', _hash_user, 'user', 100)
     RETURNING id_user INTO _user02_id;
 
-    -- ======================
     -- User03 (id = 3)
-    -- ======================
     INSERT INTO graph_user (email_user, password_user, role_user, tokens_user)
     VALUES ('user03@test.com', _hash_user, 'user', 100)
     RETURNING id_user INTO _user03_id;
 
     -- ======================
-    -- Modello 1 (User02 owner)
+    -- Modello 1 (User02 owner → nodi A-L)
     -- ======================
     INSERT INTO graph_model (id_owner_user, name_model)
     VALUES (_user02_id, 'Model_1')
     RETURNING id_model INTO _model1_id;
 
     -- Versione 1
-    INSERT INTO graph_version (id_model, version_number_version, graph_version, node_count_version, edge_count_version, id_creator_user)
+    INSERT INTO graph_version (id_model, version_number_version, graph_version,
+                               node_count_version, edge_count_version, id_creator_user)
     VALUES (
         _model1_id, 1,
         '{
-          "nodes": ["A","B","C","D","E","F","G","H","I","J"],
-          "edges": [
-            {"from":"A","to":"B","weight":1}, {"from":"A","to":"C","weight":2}, {"from":"B","to":"D","weight":3},
-            {"from":"C","to":"D","weight":4}, {"from":"D","to":"E","weight":2}, {"from":"E","to":"F","weight":5},
-            {"from":"F","to":"G","weight":1}, {"from":"G","to":"H","weight":3}, {"from":"H","to":"I","weight":2},
-            {"from":"I","to":"J","weight":4}, {"from":"A","to":"J","weight":6}, {"from":"B","to":"I","weight":2},
-            {"from":"C","to":"H","weight":3}, {"from":"D","to":"G","weight":1}, {"from":"E","to":"F","weight":2}
-          ]
+          "A": {"B": 1.2, "C": 2.5},
+          "B": {"A": 1.2, "D": 2.3, "E": 1.8},
+          "C": {"A": 2.5, "F": 1.7, "G": 2.9},
+          "D": {"B": 2.3, "H": 2.4},
+          "E": {"B": 1.8, "I": 1.6, "J": 2.1},
+          "F": {"C": 1.7, "K": 2.5},
+          "G": {"C": 2.9, "L": 1.9},
+          "H": {"D": 2.4, "I": 2.2},
+          "I": {"E": 1.6, "H": 2.2, "J": 1.5},
+          "J": {"E": 2.1, "I": 1.5, "K": 2.7},
+          "K": {"F": 2.5, "J": 2.7, "L": 1.4},
+          "L": {"G": 1.9, "K": 1.4}
         }'::jsonb,
-        10, 15, _user02_id
+        12, 15, _user02_id
     );
 
-    -- Versione 2
-    INSERT INTO graph_version (id_model, version_number_version, graph_version, node_count_version, edge_count_version, id_creator_user)
+    -- Versione 2 (pesos modificados)
+    INSERT INTO graph_version (id_model, version_number_version, graph_version,
+                               node_count_version, edge_count_version, id_creator_user)
     VALUES (
         _model1_id, 2,
         '{
-          "nodes": ["A","B","C","D","E","F","G","H","I","J"],
-          "edges": [
-            {"from":"A","to":"B","weight":2}, {"from":"B","to":"C","weight":1}, {"from":"C","to":"D","weight":2},
-            {"from":"D","to":"E","weight":3}, {"from":"E","to":"F","weight":4}, {"from":"F","to":"G","weight":2},
-            {"from":"G","to":"H","weight":2}, {"from":"H","to":"I","weight":5}, {"from":"I","to":"J","weight":1},
-            {"from":"J","to":"A","weight":3}, {"from":"B","to":"H","weight":2}, {"from":"C","to":"I","weight":3},
-            {"from":"D","to":"F","weight":4}, {"from":"E","to":"J","weight":2}, {"from":"G","to":"A","weight":1}
-          ]
+          "A": {"B": 1.5, "C": 2.7},
+          "B": {"A": 1.5, "D": 2.1, "E": 2.0},
+          "C": {"A": 2.7, "F": 1.9, "G": 3.0},
+          "D": {"B": 2.1, "H": 2.2},
+          "E": {"B": 2.0, "I": 1.8, "J": 2.3},
+          "F": {"C": 1.9, "K": 2.8},
+          "G": {"C": 3.0, "L": 2.0},
+          "H": {"D": 2.2, "I": 2.4},
+          "I": {"E": 1.8, "H": 2.4, "J": 1.7},
+          "J": {"E": 2.3, "I": 1.7, "K": 2.9},
+          "K": {"F": 2.8, "J": 2.9, "L": 1.6},
+          "L": {"G": 2.0, "K": 1.6}
         }'::jsonb,
-        10, 15, _user02_id
+        12, 15, _user02_id
     );
 
     -- ======================
-    -- Modello 2 (User03 owner)
+    -- Modello 2 (User03 owner → nodi N1-N12)
     -- ======================
     INSERT INTO graph_model (id_owner_user, name_model)
     VALUES (_user03_id, 'Model_2')
     RETURNING id_model INTO _model2_id;
 
     -- Versione 1
-    INSERT INTO graph_version (id_model, version_number_version, graph_version, node_count_version, edge_count_version, id_creator_user)
+    INSERT INTO graph_version (id_model, version_number_version, graph_version,
+                               node_count_version, edge_count_version, id_creator_user)
     VALUES (
         _model2_id, 1,
         '{
-          "nodes": ["N1","N2","N3","N4","N5","N6","N7","N8","N9","N10"],
-          "edges": [
-            {"from":"N1","to":"N2","weight":1}, {"from":"N2","to":"N3","weight":2}, {"from":"N3","to":"N4","weight":3},
-            {"from":"N4","to":"N5","weight":1}, {"from":"N5","to":"N6","weight":2}, {"from":"N6","to":"N7","weight":3},
-            {"from":"N7","to":"N8","weight":4}, {"from":"N8","to":"N9","weight":1}, {"from":"N9","to":"N10","weight":5},
-            {"from":"N10","to":"N1","weight":2}, {"from":"N2","to":"N8","weight":2}, {"from":"N3","to":"N9","weight":3},
-            {"from":"N4","to":"N10","weight":1}, {"from":"N5","to":"N7","weight":2}, {"from":"N6","to":"N1","weight":4}
-          ]
+          "N1": {"N2": 1.3, "N3": 2.1},
+          "N2": {"N1": 1.3, "N4": 2.5, "N5": 1.9},
+          "N3": {"N1": 2.1, "N6": 1.8},
+          "N4": {"N2": 2.5, "N7": 2.0},
+          "N5": {"N2": 1.9, "N8": 2.2},
+          "N6": {"N3": 1.8, "N9": 2.6},
+          "N7": {"N4": 2.0, "N10": 2.3},
+          "N8": {"N5": 2.2, "N11": 1.7},
+          "N9": {"N6": 2.6, "N12": 2.8},
+          "N10": {"N7": 2.3, "N11": 2.4},
+          "N11": {"N8": 1.7, "N10": 2.4, "N12": 1.5},
+          "N12": {"N9": 2.8, "N11": 1.5}
         }'::jsonb,
-        10, 15, _user03_id
+        12, 15, _user03_id
     );
 
-    -- Versione 2
-    INSERT INTO graph_version (id_model, version_number_version, graph_version, node_count_version, edge_count_version, id_creator_user)
+    -- Versione 2 (pesos modificados)
+    INSERT INTO graph_version (id_model, version_number_version, graph_version,
+                               node_count_version, edge_count_version, id_creator_user)
     VALUES (
         _model2_id, 2,
         '{
-          "nodes": ["N1","N2","N3","N4","N5","N6","N7","N8","N9","N10"],
-          "edges": [
-            {"from":"N1","to":"N3","weight":2}, {"from":"N2","to":"N4","weight":3}, {"from":"N3","to":"N5","weight":1},
-            {"from":"N4","to":"N6","weight":4}, {"from":"N5","to":"N7","weight":2}, {"from":"N6","to":"N8","weight":5},
-            {"from":"N7","to":"N9","weight":3}, {"from":"N8","to":"N10","weight":1}, {"from":"N9","to":"N1","weight":2},
-            {"from":"N10","to":"N2","weight":4}, {"from":"N3","to":"N7","weight":3}, {"from":"N4","to":"N8","weight":2},
-            {"from":"N5","to":"N9","weight":4}, {"from":"N6","to":"N10","weight":1}, {"from":"N7","to":"N2","weight":2}
-          ]
+          "N1": {"N2": 1.4, "N3": 2.2},
+          "N2": {"N1": 1.4, "N4": 2.6, "N5": 2.0},
+          "N3": {"N1": 2.2, "N6": 2.0},
+          "N4": {"N2": 2.6, "N7": 2.1},
+          "N5": {"N2": 2.0, "N8": 2.4},
+          "N6": {"N3": 2.0, "N9": 2.7},
+          "N7": {"N4": 2.1, "N10": 2.5},
+          "N8": {"N5": 2.4, "N11": 1.9},
+          "N9": {"N6": 2.7, "N12": 3.0},
+          "N10": {"N7": 2.5, "N11": 2.6},
+          "N11": {"N8": 1.9, "N10": 2.6, "N12": 1.7},
+          "N12": {"N9": 3.0, "N11": 1.7}
         }'::jsonb,
-        10, 15, _user03_id
+        12, 15, _user03_id
     );
 END$$;
