@@ -199,45 +199,46 @@ Le modifiche ad altri file richiedono invece un rebuild.
 La documentazione completa delle API è disponibile su `/api/docs` quando il server è in esecuzione.  
 Fornisce un’interfaccia interattiva per esplorare tutti gli endpoint, i formati delle richieste/risposte e i requisiti di autenticazione.
 
-```markdown
 ### Autenticazione
 
-| Metodo | Endpoint              | Descrizione                          |
-| ------ | --------------------- | ------------------------------------ |
-| POST   | `/api/auth/register`  | Registrare un nuovo utente           |
-| POST   | `/api/auth/login`     | Effettuare il login                  |
+| Method | Endpoint              | Description                |
+| ------ | --------------------- | -------------------------- |
+| POST   | `/api/auth/register`  | Registrare un nuovo utente        |
+| POST   | `/api/auth/login`     | Effettuare il login                 |
 | GET    | `/api/users/me`       | Ottenere il profilo utente           |
 | POST   | `/api/users/recharge` | Ricarica dei token da parte dell’Admin |
 
 ### Modelli di Grafo
 
-| Metodo | Endpoint                  | Descrizione             |
-| ------ | ------------------------- | ----------------------- |
-| POST   | `/api/models`             | Creare un nuovo modello |
+| Method | Endpoint                  | Description         |
+| ------ | ------------------------- | ------------------- |
+| POST   | `/api/models`             | Creare un nuovo modello    |
 | POST   | `/api/models/:id/execute` | Eseguire una query sul modello |
-| GET    | `/api/models/:id`         | Ottenere i dettagli del modello |
+| GET    | `/api/models/:id`         | Ottenere i dettagli del modello   |
 
 ### Richieste di Modifica Pesi
 
-| Metodo | Endpoint                                                          | Descrizione                        |
-| ------ | ----------------------------------------------------------------- | ---------------------------------- |
-| POST   | `/api/models/:id/weight-change`                                   | Inviare una richiesta di modifica peso |
-| GET    | `/api/models/:id/weight-change?state=pending&fromDate=YYYY-MM-DD` | Filtrare richieste per stato/data  |
-| PATCH  | `/api/models/:id/weight-change/:requestId/approve`                | Approvare una richiesta            |
-| PATCH  | `/api/models/:id/weight-change/:requestId/reject`                 | Rifiutare una richiesta            |
+| Method | Endpoint                                                          | Description                   |
+| ------ | ----------------------------------------------------------------- | ----------------------------- |
+| POST   | `/api/models/:id/weight-change`                                   | Inviare una richiesta di modifica peso  |
+| GET    | `/api/models/:id/weight-change?state=pending&fromDate=YYYY-MM-DD` | Filtrare richieste per stato/data |
+| PATCH  | `/api/models/:id/weight-change/:requestId/approve`                | Approvare una richiesta               |
+| PATCH  | `/api/models/:id/weight-change/:requestId/reject`                 | Rifiutare una richiesta                |
 
 ### Versioni dei Modelli
 
-| Metodo | Endpoint                                             | Descrizione                  |
-| ------ | ---------------------------------------------------- | ---------------------------- |
+| Method | Endpoint                                             | Description           |
+| ------ | ---------------------------------------------------- | --------------------- |
 | GET    | `/api/models/:id/versions?nodeCount=12&edgeCount=20` | Filtrare versioni del modello |
 
 ### Simulazioni
 
-| Metodo | Endpoint                   | Descrizione                  |
-| ------ | -------------------------- | ---------------------------- |
+| Method | Endpoint                   | Description             |
+| ------ | -------------------------- | ----------------------- |
 | POST   | `/api/models/:id/simulate` | Eseguire una simulazione sugli archi |
-```
+
+
+
 
 ## Example Requests
 
@@ -309,10 +310,9 @@ Gli **Seeder** forniscono:
 * Almeno 2 versioni ciascuno  
 
 
-````markdown
 ## Architettura & Design Patterns
 
-InferNode implementa un’architettura **multilivello** con alcuni design pattern per garantire manutenibilità e separazione delle responsabilità.
+Project_Graph_Optimization implementa un’architettura **multilivello** con alcuni design pattern per garantire manutenibilità e separazione delle responsabilità.
 
 ## Architettura a Livelli
 
@@ -332,7 +332,7 @@ L’applicazione segue un pattern architetturale a livelli con separazione delle
 ├─────────────────────────────────────────────────────┤
 │                     Models                          │ ← Strutture dati
 └─────────────────────────────────────────────────────┘
-````
+```
 
 Il flusso per la gestione delle richieste segue questo percorso:
 
