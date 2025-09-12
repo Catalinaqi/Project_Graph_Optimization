@@ -34,7 +34,7 @@ ALTER SEQUENCE graph_token_transaction_id_token_transaction_seq RESTART WITH 1;
 
 -- =====================================================
 -- SEEDER: utenti + modelli + versioni
-
+-- =====================================================
 -- Seeders provide:
 -- * 1 Admin user, multiple standard users
 -- * Initial graph models (≥ 10 nodes, ≥ 15 edges)
@@ -55,28 +55,28 @@ BEGIN
     SELECT crypt('user123', gen_salt('bf', 12)) INTO _hash_user;
 
     -- ======================
-    -- Admin
+    -- Admin (id_user = 1)
     -- ======================
     INSERT INTO graph_user (email_user, password_user, role_user, tokens_user)
     VALUES ('admin@test.com', _hash_admin, 'admin', 999)
     RETURNING id_user INTO _admin_id;
 
     -- ======================
-    -- User 02
+    -- User02 (id_user = 2)
     -- ======================
     INSERT INTO graph_user (email_user, password_user, role_user, tokens_user)
     VALUES ('user02@test.com', _hash_user, 'user', 100)
     RETURNING id_user INTO _user02_id;
 
     -- ======================
-    -- User 03
+    -- User03 (id_user = 3)
     -- ======================
     INSERT INTO graph_user (email_user, password_user, role_user, tokens_user)
     VALUES ('user03@test.com', _hash_user, 'user', 100)
     RETURNING id_user INTO _user03_id;
 
     -- ======================
-    -- Modello 1 (Admin)
+    -- Modello 1 (Admin owner → id_user = 1)
     -- ======================
     INSERT INTO graph_model (id_owner_user, name_model)
     VALUES (_admin_id, 'Model_1')
@@ -117,7 +117,7 @@ BEGIN
     );
 
     -- ======================
-    -- Modello 2 (User02)
+    -- Modello 2 (User02 owner → id_user = 2)
     -- ======================
     INSERT INTO graph_model (id_owner_user, name_model)
     VALUES (_user02_id, 'Model_2')
