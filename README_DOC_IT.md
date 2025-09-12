@@ -343,7 +343,6 @@ Il flusso per la gestione delle richieste segue questo percorso:
 5. **DAO (Data Access Objects)**: eseguono operazioni sul database e gestiscono le query
 6. **Models**: definiscono lo schema del database, le relazioni e le strutture dati
 
-```
 
 ## Implementazione dei Design Pattern Architetturali
 
