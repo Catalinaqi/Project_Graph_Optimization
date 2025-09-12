@@ -1,4 +1,40 @@
--- ============================================
+-- =====================================================
+-- RESET DATI
+-- =====================================================
+
+-- 1) Elimina richieste di cambio peso
+DELETE FROM graph_weight_change_request;
+
+-- 2) Elimina risultati simulazioni
+DELETE FROM graph_simulation_result;
+
+-- 3) Elimina simulazioni
+DELETE FROM graph_simulation;
+
+-- 4) Elimina transazioni token
+DELETE FROM graph_token_transaction;
+
+-- 5) Elimina versioni modelli
+DELETE FROM graph_version;
+
+-- 6) Elimina modelli
+DELETE FROM graph_model;
+
+-- 7) Elimina tutti gli utenti (compresi non admin)
+DELETE FROM graph_user;
+
+-- =====================================================
+-- RESET SEQUENCE
+-- =====================================================
+ALTER SEQUENCE graph_user_id_user_seq RESTART WITH 1;
+ALTER SEQUENCE graph_model_id_model_seq RESTART WITH 1;
+ALTER SEQUENCE graph_weight_change_request_id_weight_change_request_seq RESTART WITH 1;
+ALTER SEQUENCE graph_version_id_version_seq RESTART WITH 1;
+ALTER SEQUENCE graph_token_transaction_id_token_transaction_seq RESTART WITH 1;
+
+-- =====================================================
+-- SEEDER: utenti + modelli + versioni
+
 -- Seeders provide:
 -- * 1 Admin user, multiple standard users
 -- * Initial graph models (≥ 10 nodes, ≥ 15 edges)
@@ -9,12 +45,12 @@ DECLARE
     _hash_admin TEXT;
     _hash_user  TEXT;
     _admin_id   INT;
-    _user1_id   INT;
-    _user2_id   INT;
+    _user02_id  INT;
+    _user03_id  INT;
     _model1_id  INT;
     _model2_id  INT;
 BEGIN
-    -- Creazione hash password
+    -- Hash password
     SELECT crypt('admin123', gen_salt('bf', 12)) INTO _hash_admin;
     SELECT crypt('user123', gen_salt('bf', 12)) INTO _hash_user;
 
@@ -23,45 +59,24 @@ BEGIN
     -- ======================
     INSERT INTO graph_user (email_user, password_user, role_user, tokens_user)
     VALUES ('admin@test.com', _hash_admin, 'admin', 999)
-    ON CONFLICT (email_user) DO NOTHING
     RETURNING id_user INTO _admin_id;
 
-    IF _admin_id IS NULL THEN
-        SELECT id_user INTO _admin_id
-        FROM graph_user WHERE email_user = 'admin@test.com'
-        LIMIT 1;
-    END IF;
-
     -- ======================
-    -- User1
+    -- User 02
     -- ======================
     INSERT INTO graph_user (email_user, password_user, role_user, tokens_user)
-    VALUES ('user1@test.com', _hash_user, 'user', 100)
-    ON CONFLICT (email_user) DO NOTHING
-    RETURNING id_user INTO _user1_id;
-
-    IF _user1_id IS NULL THEN
-        SELECT id_user INTO _user1_id
-        FROM graph_user WHERE email_user = 'user1@test.com'
-        LIMIT 1;
-    END IF;
+    VALUES ('user02@test.com', _hash_user, 'user', 100)
+    RETURNING id_user INTO _user02_id;
 
     -- ======================
-    -- User2
+    -- User 03
     -- ======================
     INSERT INTO graph_user (email_user, password_user, role_user, tokens_user)
-    VALUES ('user2@test.com', _hash_user, 'user', 100)
-    ON CONFLICT (email_user) DO NOTHING
-    RETURNING id_user INTO _user2_id;
-
-    IF _user2_id IS NULL THEN
-        SELECT id_user INTO _user2_id
-        FROM graph_user WHERE email_user = 'user2@test.com'
-        LIMIT 1;
-    END IF;
+    VALUES ('user03@test.com', _hash_user, 'user', 100)
+    RETURNING id_user INTO _user03_id;
 
     -- ======================
-    -- Modello 1 (Admin owner)
+    -- Modello 1 (Admin)
     -- ======================
     INSERT INTO graph_model (id_owner_user, name_model)
     VALUES (_admin_id, 'Model_1')
@@ -102,10 +117,10 @@ BEGIN
     );
 
     -- ======================
-    -- Modello 2 (User1 owner)
+    -- Modello 2 (User02)
     -- ======================
     INSERT INTO graph_model (id_owner_user, name_model)
-    VALUES (_user1_id, 'Model_2')
+    VALUES (_user02_id, 'Model_2')
     RETURNING id_model INTO _model2_id;
 
     -- Versione 1
@@ -122,7 +137,7 @@ BEGIN
             {"from":"N4","to":"N10","weight":1}, {"from":"N5","to":"N7","weight":2}, {"from":"N6","to":"N1","weight":4}
           ]
         }'::jsonb,
-        10, 15, _user1_id
+        10, 15, _user02_id
     );
 
     -- Versione 2
@@ -139,6 +154,6 @@ BEGIN
             {"from":"N5","to":"N9","weight":4}, {"from":"N6","to":"N10","weight":1}, {"from":"N7","to":"N2","weight":2}
           ]
         }'::jsonb,
-        10, 15, _user1_id
+        10, 15, _user02_id
     );
 END$$;
